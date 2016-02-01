@@ -1,0 +1,9 @@
+* ルール
+  s   = 主語
+  ss  = 順動詞の主語（I like a book publied yeasterday.）
+  v   = 動詞
+  not = 否定語
+  av  = 助動詞（Do, will, must...）
+  cp  = 現在分詞（xxing）
+  pp  = 過去分詞（I was killed）
+  fp  = 未来分詞 (to help)
