@@ -35,7 +35,7 @@ class Corpus(object):
 class EnMarkCorpus(Corpus):
     def __init__(self, input_file):
         super(EnMarkCorpus, self).__init__(input_file)
-        for char in ["<s>"]:
+        for char in ["<s>", "<ss>"]:
             self.add_vocab(char)
 
     def parse(self, line):
