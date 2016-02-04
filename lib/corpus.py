@@ -4,7 +4,7 @@ import re
 import numpy as np
 
 num_regexp      = re.compile(r'-?[0-9]+[,.0-9]+')
-meta_tag_regexp = re.compile(r'<[^> ]+>')
+meta_tag_regexp = re.compile(r'(<[^> ]+>)')
 dot_guys_regexp = re.compile(r'([,.\'"?.])')
 spaces_regexp   = re.compile(r'( +)')
 
@@ -76,10 +76,15 @@ class Corpus(object):
 
     # X and Y -------------------------------------------
     def data_at(self, index):
-        return [id for id in self.rows[index] if self.is_meta_tag(id)]
+        return [id for id in self.rows[index] if not self.is_teacher_tag(id)]
 
     def teacher_at(self, index):
         return 0
+
+    def is_teacher_tag(self, id):
+        raise Exception("まだ未実装")
+        allow_tags = self.tokens_to_ids(["<bos>", "<br>", "<number>", "<eos>"])
+        return self.is_meta_tag(id) && id in allow_tags
 
     def is_meta_tag(self, id):
         return re.match(meta_tag_regexp, self.id_to_token(id))
