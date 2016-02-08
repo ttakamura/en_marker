@@ -63,7 +63,10 @@ class Corpus(object):
         return [self.token_to_id(t) for t in tokens]
 
     def token_to_id(self, token):
-        return self.vocab[token]
+        if token in self.vocab:
+            return self.vocab[token]
+        else:
+            return self.vocab["<unk>"]
 
     # decode --------------------------------------------
     def decode(self, ids):
