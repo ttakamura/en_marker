@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import codecs
 import re
 import numpy as np
+from nltk.tag.perceptron import PerceptronTagger
 
 num_regexp      = re.compile(r'-?[0-9]+[,.0-9]+')
 meta_tag_regexp = re.compile(r'(<[^> ]+>)')
@@ -38,13 +39,13 @@ class Corpus(object):
     def parse(self, line):
         if len(line.strip()) > 0:
             tokens = self.tokenize(line)
-            self.add_row(tokens)
+            self.add_row(self.rows, tokens)
 
-    def add_row(self, tokens):
+    def add_row(self, rows, tokens):
         for token in tokens:
             self.add_vocab(token)
         ids = self.tokens_to_ids(tokens)
-        self.rows.append(ids)
+        rows.append(ids)
 
     def add_vocab(self, char):
         if not char in self.vocab:
@@ -85,6 +86,9 @@ class Corpus(object):
     def data_at(self, index):
         return [id for id in self.rows[index] if not self.is_teacher_tag(id)]
 
+    def pos_tag_at(self, index):
+        return hoge
+
     def teacher_at(self, index):
         return [id for id in self.rows[index]]
 
@@ -97,6 +101,15 @@ class Corpus(object):
 class EnMarkCorpus(Corpus):
     def __init__(self, input_file):
         super(EnMarkCorpus, self).__init__(input_file)
+        self.pos_tagged_rows = []
+        self.tagger          = PerceptronTagger()
+
+    def parse(self, line):
+        if len(line.strip()) > 0:
+            tokens = self.tokenize(line)
+            self.add_row(self.rows, tokens)
+            tags = [tag for word, tag in self.tagger.tag(tokens)]
+            self.add_row(self.pos_tagged_rows, tags)
 
     def tokenize(self, line, cleanup_tag=False):
         line = line.lower()
