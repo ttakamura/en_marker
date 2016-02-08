@@ -51,3 +51,6 @@ def test_decode(test_corp):
 
 def test_data_at(test_corp):
     assert test_corp.ids_to_tokens(test_corp.data_at(0)) == ["<bos>", "james", "is", "a", "teacher", ".", "<br>", "<eos>"]
+
+def test_teacher_at(test_corp):
+    assert test_corp.ids_to_tokens(test_corp.teacher_at(0)) == ["<bos>", "<s>", "james", "</s>", "<v>", "is", "</v>", "a", "teacher", ".", "<br>", "<eos>"]

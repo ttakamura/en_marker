@@ -83,7 +83,7 @@ class Corpus(object):
         return [id for id in self.rows[index] if not self.is_teacher_tag(id)]
 
     def teacher_at(self, index):
-        return 0
+        return [id for id in self.rows[index]]
 
     def is_teacher_tag(self, id):
         return self.is_meta_tag(id) and not (id in self.train_allow_tag_ids)
