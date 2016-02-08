@@ -8,6 +8,9 @@ meta_tag_regexp = re.compile(r'(<[^> ]+>)')
 dot_guys_regexp = re.compile(r'([,.\'"?.])')
 spaces_regexp   = re.compile(r'( +)')
 
+# Allow for train and test data
+train_allow_tags = ["<unk>", "<bos>", "<pad>", "<eos>", "<br>"]
+
 def open(path):
     c = EnMarkCorpus(path)
     c.open()
@@ -19,8 +22,9 @@ class Corpus(object):
         self.rows = []
         self.vocab = {}
         self.bacov = {}
-        for char in ["<unk>", "<bos>", "<pad>", "<eos>", "<br>"]:
+        for char in train_allow_tags:
             self.add_vocab(char)
+        self.train_allow_tag_ids = self.tokens_to_ids(train_allow_tags)
 
     def open(self):
         with codecs.open(self.input_file) as f:
@@ -82,9 +86,7 @@ class Corpus(object):
         return 0
 
     def is_teacher_tag(self, id):
-        raise Exception("まだ未実装")
-        allow_tags = self.tokens_to_ids(["<bos>", "<br>", "<number>", "<eos>"])
-        return self.is_meta_tag(id) && id in allow_tags
+        return self.is_meta_tag(id) and not (id in self.train_allow_tag_ids)
 
     def is_meta_tag(self, id):
         return re.match(meta_tag_regexp, self.id_to_token(id))
@@ -92,8 +94,6 @@ class Corpus(object):
 class EnMarkCorpus(Corpus):
     def __init__(self, input_file):
         super(EnMarkCorpus, self).__init__(input_file)
-        for char in ["<s>", "<ss>"]:
-            self.add_vocab(char)
 
     def tokenize(self, line, cleanup_tag=False):
         line = line.lower()

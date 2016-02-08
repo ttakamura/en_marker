@@ -44,7 +44,10 @@ def test_tokenize(test_corp):
     assert test_corp.tokenize("3 > 1", cleanup_tag=True) == ["<bos>", "3", ">", "1", "<eos>"]
 
 def test_encode(test_corp):
-    assert [1, 7, 10, 14, 3] == test_corp.encode("james is.")
+    assert [1, 6, 9, 13, 3] == test_corp.encode("james is.")
 
 def test_decode(test_corp):
-    assert "<bos> james is . <eos>" == test_corp.decode([1, 7, 10, 14, 3])
+    assert "<bos> james is . <eos>" == test_corp.decode([1, 6, 9, 13, 3])
+
+def test_data_at(test_corp):
+    assert test_corp.ids_to_tokens(test_corp.data_at(0)) == ["<bos>", "james", "is", "a", "teacher", ".", "<br>", "<eos>"]
