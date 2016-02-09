@@ -2,3 +2,4 @@ chainer==1.6.0
 pytest==2.8.7
 pyyaml
 nltk==3.1
+ipython

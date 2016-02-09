@@ -107,15 +107,15 @@ class Corpus(object):
 class EnMarkCorpus(Corpus):
     def __init__(self, input_file, tagger=PerceptronTagger()):
         super(EnMarkCorpus, self).__init__(input_file)
-        self.pos_tagged_rows = []
-        self.tagger          = tagger
+        self.pos_rows = []
+        self.tagger   = tagger
 
     def parse(self, line):
         if len(line.strip()) > 0:
             tokens = self.tokenize(line)
             self.add_row(self.rows, tokens)
             tags = self.pos_tag(tokens)
-            self.add_row(self.pos_tagged_rows, tags)
+            self.add_row(self.pos_rows, tags)
 
     def tokenize(self, line, cleanup_tag=False):
         line = line.lower()
