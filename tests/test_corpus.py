@@ -7,12 +7,16 @@ import corpus
 
 test_file = "tests/test.html"
 
+class DummyPosTagger:
+    def tag(self, tokens):
+        return [(token, "NN") for token in tokens]
+
 def pytest_funcarg__test_corp(request):
-    return corpus.open(test_file)
+    return corpus.open(test_file, tagger=DummyPosTagger())
 
 # ------- test ------------------------
 def test_init_corpus():
-    c = corpus.EnMarkCorpus(test_file)
+    c = corpus.EnMarkCorpus(test_file, tagger=DummyPosTagger())
     assert c.vocab['<unk>'] == 0
 
 def test_size(test_corp):
@@ -57,3 +61,8 @@ def test_teacher_at(test_corp):
 
 def test_unknown_word(test_corp):
     assert test_corp.ids_to_tokens(test_corp.encode("isetan")) == ["<bos>", "<unk>", "<eos>"]
+
+def test_pos_tag(test_corp):
+    tokens = ["james", "</s>", "<v>", "is", "</v>", "teacher"]
+    tags   = test_corp.pos_tag(tokens)
+    assert tags == ["<POS:NN>", "<POS:META>", "<POS:META>", "<POS:NN>", "<POS:META>", "<POS:NN>"]

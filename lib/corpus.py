@@ -12,8 +12,8 @@ spaces_regexp   = re.compile(r'( +)')
 # Allow for train and test data
 train_allow_tags = ["<unk>", "<bos>", "<pad>", "<eos>", "<br>"]
 
-def open(path):
-    c = EnMarkCorpus(path)
+def open(path, tagger=PerceptronTagger()):
+    c = EnMarkCorpus(path, tagger=tagger)
     c.open()
     return c
 
@@ -64,10 +64,13 @@ class Corpus(object):
         return [self.token_to_id(t) for t in tokens]
 
     def token_to_id(self, token):
-        if token in self.vocab:
+        if self.known_word(token):
             return self.vocab[token]
         else:
             return self.vocab["<unk>"]
+
+    def known_word(self, token):
+        return token in self.vocab
 
     # decode --------------------------------------------
     def decode(self, ids):
@@ -93,22 +96,25 @@ class Corpus(object):
         return [id for id in self.rows[index]]
 
     def is_teacher_tag(self, id):
-        return self.is_meta_tag(id) and not (id in self.train_allow_tag_ids)
+        return self.is_meta_tag_id(id) and not (id in self.train_allow_tag_ids)
 
-    def is_meta_tag(self, id):
-        return re.match(meta_tag_regexp, self.id_to_token(id))
+    def is_meta_tag_id(self, id):
+        return self.is_meta_tag(self.id_to_token(id))
+
+    def is_meta_tag(self, token):
+        return re.match(meta_tag_regexp, token)
 
 class EnMarkCorpus(Corpus):
-    def __init__(self, input_file):
+    def __init__(self, input_file, tagger=PerceptronTagger()):
         super(EnMarkCorpus, self).__init__(input_file)
         self.pos_tagged_rows = []
-        self.tagger          = PerceptronTagger()
+        self.tagger          = tagger
 
     def parse(self, line):
         if len(line.strip()) > 0:
             tokens = self.tokenize(line)
             self.add_row(self.rows, tokens)
-            tags = [tag for word, tag in self.tagger.tag(tokens)]
+            tags = self.pos_tag(tokens)
             self.add_row(self.pos_tagged_rows, tags)
 
     def tokenize(self, line, cleanup_tag=False):
@@ -119,6 +125,19 @@ class EnMarkCorpus(Corpus):
         line = self.expand_abbr(line)
         line = self.split_text(line)
         return line
+
+    def pos_tag(self, tokens):
+        pos_safe_tokens = []
+        for token in tokens:
+            if not self.is_meta_tag(token):
+                pos_safe_tokens.append(token)
+        idx = 0
+        pos_tags = ["<POS:META>"] * len(tokens)
+        for word, tag in self.tagger.tag(pos_safe_tokens):
+            while not word == tokens[idx]:
+                idx += 1
+            pos_tags[idx] = "<POS:{0}>".format(tag)
+        return pos_tags
 
     def split_text(self, line):
         line = '<bos>' + line.replace('\n', '<br>') + '<eos>'
