@@ -5,12 +5,9 @@ from IPython import embed
 
 sys.path.append('lib')
 import corpus
+import config
 
-parser = argparse.ArgumentParser(description='English marker')
-parser.add_argument('--mode', default='console', help='console or test')
-args = parser.parse_args()
-
-if args.mode == 'console':
+if config.mode() == 'console':
     embed()
 else:
     print 'hello'
