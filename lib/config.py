@@ -19,6 +19,7 @@ def parse_args(raw_args = None):
 class Config:
     def __init__(self, raw_args):
         self.args = self.parse_args(raw_args)
+        self.corpus = None
 
     def parse_args(self, raw_args):
         default_embed     = 100
@@ -33,6 +34,9 @@ class Config:
         p.add_argument('--epoch',    default=default_epoch,    type=int)
         p.add_argument('--minbatch', default=default_minbatch, type=int)
         return p.parse_args(raw_args)
+
+    def corpus(self):
+        return self.corpus
 
     def xp(self):
         return cuda.cupy if self.use_gpu() else numpy

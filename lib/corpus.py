@@ -158,3 +158,22 @@ class EnMarkCorpus(Corpus):
 
     def replace_number(self, line):
         return re.sub(num_regexp, '<number>', line)
+
+class MinBatch:
+    def __init__(self, conf, id_rows):
+        self.conf = conf
+        self.rows = self.fill_pad(id_rows)
+
+    def fill_pad(self, id_rows):
+        return id_rows
+
+    def batch_at(self, seq_idx):
+        xp = self.conf.xp()
+        x  = xp.array([self.id_rows[k][l] for k in range(batch_size)], dtype=np.int32)
+        return x
+
+    def batch_size(self):
+        return len(self.rows)
+
+    def seq_length(self):
+        return len(self.rows[0])

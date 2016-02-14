@@ -9,15 +9,31 @@ import chainer.links as L
 import config
 import encdec
 
-def forward(src_batch, trg_batch, corpus, conf, encdec, is_training, generation_limit):
+class MinBatch:
+    def __init__(self, conf, id_rows):
+        self.conf = conf
+        self.rows = self.fill_pad(id_rows)
+
+    def fill_pad(self, id_rows):
+        return id_rows
+
+    def batch_at(self, seq_idx):
+        xp = self.conf.xp()
+        x  = xp.array([self.id_rows[k][l] for k in range(batch_size)], dtype=np.int32)
+        return x
+
+    def batch_size(self):
+        return len(self.rows)
+
+    def seq_length(self):
+        return len(self.rows[0])
+
+def forward(src_batch, trg_batch, conf, encdec, is_training, generation_limit):
   xp = conf.xp()
-  batch_size = len(src_batch)
-  src_len    = len(src_batch[0])
-  trg_len    = len(trg_batch[0]) if trg_batch else 0
-  encdec.reset(batch_size)
+  encdec.reset(src_batch.batch_size())
 
   for l in reversed(range(src_len)):
-    x = xp.array([src_stoi(src_batch[k][l]) for k in range(batch_size)], dtype=np.int32)
+    x = src_batch.batch_at(l)
     encdec.encode(x)
 
   t = XP.iarray([trg_stoi('<s>') for _ in range(batch_size)])
