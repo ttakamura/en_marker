@@ -12,27 +12,6 @@ def parse_args(raw_args = None):
     else:
         return Config(raw_args)
 
-def mode():
-    return parse_args().args.mode
-
-def gpu():
-    return parse_args().args.gpu
-
-def use_gpu():
-    return parse_args().args.gpu > 0
-
-def embed():
-    return parse_args().args.embed
-
-def hidden():
-    return parse_args().args.hidden
-
-def epoch():
-    return parse_args().args.epoch
-
-def minbatch():
-    return parse_args().args.minbatch
-
 class Config:
     def __init__(self, raw_args):
         self.args = self.parse_args(raw_args)
@@ -50,3 +29,27 @@ class Config:
         p.add_argument('--epoch',    default=default_epoch,    type=int)
         p.add_argument('--minbatch', default=default_minbatch, type=int)
         return p.parse_args(raw_args)
+
+    def xp(self):
+        return cuda.cupy if self.use_gpu() else np
+
+    def mode(self):
+        return self.args.mode
+
+    def gpu(self):
+        return self.args.gpu
+
+    def use_gpu(self):
+        return self.args.gpu > 0
+
+    def embed_size(self):
+        return self.args.embed
+
+    def hidden_size(self):
+        return self.args.hidden
+
+    def epoch(self):
+        return self.args.epoch
+
+    def batch_size(self):
+        return self.args.minbatch
