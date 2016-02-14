@@ -9,19 +9,15 @@ import chainer.links as L
 import config
 import encdec
 
-def forward(src_batch, trg_batch, corpus, encdec, is_training, generation_limit):
+def forward(src_batch, trg_batch, corpus, conf, encdec, is_training, generation_limit):
+  xp = conf.xp()
   batch_size = len(src_batch)
-  src_len = len(src_batch[0])
-  trg_len = len(trg_batch[0]) if trg_batch else 0
-  src_stoi = src_vocab.stoi
-  trg_stoi = trg_vocab.stoi
-  trg_itos = trg_vocab.itos
+  src_len    = len(src_batch[0])
+  trg_len    = len(trg_batch[0]) if trg_batch else 0
   encdec.reset(batch_size)
 
-  x = XP.iarray([src_stoi('</s>') for _ in range(batch_size)])
-  encdec.encode(x)
   for l in reversed(range(src_len)):
-    x = XP.iarray([src_stoi(src_batch[k][l]) for k in range(batch_size)])
+    x = xp.array([src_stoi(src_batch[k][l]) for k in range(batch_size)], dtype=np.int32)
     encdec.encode(x)
 
   t = XP.iarray([trg_stoi('<s>') for _ in range(batch_size)])

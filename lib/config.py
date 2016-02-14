@@ -1,4 +1,8 @@
+from __future__ import unicode_literals
 import sys
+import numpy
+from chainer import cuda
+
 from argparse import ArgumentParser
 
 main_conf = None
@@ -31,7 +35,7 @@ class Config:
         return p.parse_args(raw_args)
 
     def xp(self):
-        return cuda.cupy if self.use_gpu() else np
+        return cuda.cupy if self.use_gpu() else numpy
 
     def mode(self):
         return self.args.mode

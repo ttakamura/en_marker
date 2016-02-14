@@ -47,11 +47,11 @@ class EncoderDecoder(Chain):
     self.vocab_size = vocab_size
     self.conf = conf
 
-  def reset(self):
+  def reset(self, batch_size):
     xp = self.conf.xp()
     self.zerograds()
-    self.c = xp.zeros((self.conf.batch_size(), self.conf.hidden_size()))
-    self.h = xp.zeros((self.conf.batch_size(), self.conf.hidden_size()))
+    self.c = xp.zeros((batch_size, self.conf.hidden_size()))
+    self.h = xp.zeros((batch_size, self.conf.hidden_size()))
 
   def encode(self, x):
     self.c, self.h = self.enc(x, self.c, self.h)
