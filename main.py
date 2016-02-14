@@ -7,7 +7,10 @@ sys.path.append('lib')
 import corpus
 import config
 
-if config.mode() == 'console':
+conf = config.parse_args()
+conf.corpus = "hoge"
+
+if conf.mode() == 'console':
     embed()
 else:
     print 'hello'

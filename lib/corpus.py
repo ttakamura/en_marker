@@ -167,6 +167,10 @@ class MinBatch:
     def fill_pad(self, id_rows):
         return id_rows
 
+    def boundary_symbol_batch(self):
+        # Do I need return a special charactor?
+        return self.batch_at(0)
+
     def batch_at(self, seq_idx):
         xp = self.conf.xp()
         x  = xp.array([self.id_rows[k][l] for k in range(batch_size)], dtype=np.int32)
