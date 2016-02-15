@@ -12,7 +12,12 @@ spaces_regexp   = re.compile(r'( +)')
 # Allow for train and test data
 train_allow_tags = ["<unk>", "<bos>", "<pad>", "<eos>", "<br>"]
 
-def open(path, tagger=PerceptronTagger()):
+class DummyPosTagger:
+    def tag(self, tokens):
+        return [(token, "NN") for token in tokens]
+
+# def open(path, tagger=PerceptronTagger()):
+def open(path, tagger=DummyPosTagger()):
     c = EnMarkCorpus(path, tagger=tagger)
     c.open()
     return c
@@ -105,7 +110,7 @@ class Corpus(object):
         return re.match(meta_tag_regexp, token)
 
 class EnMarkCorpus(Corpus):
-    def __init__(self, input_file, tagger=PerceptronTagger()):
+    def __init__(self, input_file, tagger=None):
         super(EnMarkCorpus, self).__init__(input_file)
         self.pos_rows = []
         self.tagger   = tagger
@@ -160,11 +165,41 @@ class EnMarkCorpus(Corpus):
         return re.sub(num_regexp, '<number>', line)
 
 class MinBatch:
-    def __init__(self, conf, id_rows):
-        self.conf = conf
-        self.rows = self.fill_pad(id_rows)
+    @staticmethod
+    def randomized_from_corpus(conf, corpus, batch_size):
+        size = int(corpus.size() / batch_size)
+        idxs = np.random.permutation(size * batch_size).reshape(size, batch_size)
+        brk  = int(size * 0.7)
+        train_idxs = idxs[:brk]
+        test_idxs  = idxs[brk:]
+        trains, tests =  MinBatch.from_corpus(conf, corpus, train_idxs, test_idxs)
+        return train_idxs, test_idxs, trains, tests
+
+    @staticmethod
+    def from_corpus(conf, corpus, train_idxs, test_idxs):
+        train_batches = []
+        test_batches  = []
+        for batch_idxs in train_idxs:
+            batch = MinBatch(conf, corpus, [corpus.data_at(idx) for idx in batch_idxs])
+            train_batches.append(batch)
+        for batch_idxs in test_idxs:
+            batch = MinBatch(conf, corpus, [corpus.teacher_at(idx) for idx in batch_idxs])
+            test_batches.append(batch)
+        return train_batches, test_batches
+
+    def __init__(self, conf, corpus, id_rows):
+        self.conf   = conf
+        self.corpus = corpus
+        self.rows   = self.fill_pad(id_rows)
 
     def fill_pad(self, id_rows):
+        pad_id     = self.corpus.token_to_id("<pad>")
+        max_length = max([ len(row) for row in id_rows ])
+        for row in id_rows:
+            if max_length > len(row):
+                pad_size = (max_length - len(row))
+                for _ in range(pad_size):
+                    row.append(pad_id)
         return id_rows
 
     def boundary_symbol_batch(self):
@@ -173,7 +208,7 @@ class MinBatch:
 
     def batch_at(self, seq_idx):
         xp = self.conf.xp()
-        x  = xp.array([self.id_rows[k][l] for k in range(batch_size)], dtype=np.int32)
+        x  = xp.array([self.rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.int32)
         return x
 
     def batch_size(self):

@@ -1,22 +1,27 @@
 from __future__ import unicode_literals
 import pytest
+import numpy as np
 import sys
 sys.path.append('lib')
 
 import corpus
+from corpus import MinBatch
+import config
+
+np.random.seed(123)
 
 test_file = "tests/test.html"
 
-class DummyPosTagger:
-    def tag(self, tokens):
-        return [(token, "NN") for token in tokens]
-
 def pytest_funcarg__test_corp(request):
-    return corpus.open(test_file, tagger=DummyPosTagger())
+    return corpus.open(test_file, tagger=corpus.DummyPosTagger())
+
+def pytest_funcarg__test_conf(request):
+    args = "--mode train".split(" ")
+    return config.parse_args(raw_args = args)
 
 # ------- test ------------------------
 def test_init_corpus():
-    c = corpus.EnMarkCorpus(test_file, tagger=DummyPosTagger())
+    c = corpus.EnMarkCorpus(test_file, tagger=corpus.DummyPosTagger())
     assert c.vocab['<unk>'] == 0
 
 def test_size(test_corp):
@@ -66,3 +71,26 @@ def test_pos_tag(test_corp):
     tokens = ["james", "</s>", "<v>", "is", "</v>", "teacher"]
     tags   = test_corp.pos_tag(tokens)
     assert tags == ["<POS:NN>", "<POS:META>", "<POS:META>", "<POS:NN>", "<POS:META>", "<POS:NN>"]
+
+def test_minbatch_randomized_from_corpus(test_conf, test_corp):
+    train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(test_conf, test_corp, 2)
+    assert train_idxs.shape == (2, 2)
+    assert test_idxs.shape  == (1, 2)
+
+def test_minbatch_from_corpus(test_conf, test_corp):
+    train_idxs = [[1, 3]]
+    test_idxs  = [[0, 2]]
+    trains, tests = MinBatch.from_corpus(test_conf, test_corp, train_idxs, test_idxs)
+    f = lambda x: test_corp.ids_to_tokens(list(x))
+
+    # I'm James.
+    # He hasn't
+    assert f(trains[0].batch_at(1)) == ["i",  "he"]
+    assert f(trains[0].batch_at(2)) == ["am", "has"]
+
+    # <s>James</s> <v>is</v> a teacher.
+    # I haven't
+    assert f(tests[0].batch_at(1)) == ["<s>",     "i"]
+    assert f(tests[0].batch_at(2)) == ["james",   "have"]
+    assert f(tests[0].batch_at(7)) == ["a",       "<pad>"]
+    assert f(tests[0].batch_at(8)) == ["teacher", "<pad>"]

@@ -4,6 +4,7 @@ import sys
 sys.path.append('lib')
 
 import config
+import corpus
 import runner
 from encdec import EncoderDecoder
 
@@ -16,8 +17,3 @@ def pytest_funcarg__encdec_s(request):
 
 def pytest_funcarg__test_corp(request):
     return corpus.open(test_file)
-
-def test_forward(encdec_s, test_corp):
-    conf = encdec_s.conf
-    conf.corpus = test_corp
-    results, loss = runner.forward(src_batch, trg_batch, conf, encdec_s, True, 100)
