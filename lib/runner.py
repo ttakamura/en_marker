@@ -10,21 +10,21 @@ import config
 import encdec
 from corpus import MinBatch
 
-def forward(src_batch, trg_batch, conf, encdec, is_training, generation_limit):
+def forward(batch, conf, encdec, is_training, generation_limit):
   xp         = conf.xp()
-  batch_size = src_batch.batch_size()
-  t          = src_batch.boundary_symbol_batch()
+  batch_size = batch.batch_size()
+  t          = batch.boundary_symbol_batch()
   hyp_batch  = [[] for _ in range(batch_size)]
   encdec.reset(batch_size)
 
-  for seq_idx in reversed(range(src_batch.seq_length())):
-    x = src_batch.batch_at(seq_idx)
+  for seq_idx in reversed(range(batch.data_seq_length())):
+    x = batch.data_batch_at(seq_idx)
     encdec.encode(x)
 
   if is_training:
-    for seq_idx in range(trg_batch.seq_length()):
+    for seq_idx in range(batch.teach_seq_length()):
       y = encdec.decode(t)
-      t = trg_batch.batch_at(seq_idx)
+      t = batch.teach_batch_at(seq_idx)
       encdec.add_loss(y, t)
       output = cuda.to_cpu(y.data.argmax(1))
       for k in range(batch_size):
@@ -50,21 +50,18 @@ def train(conf):
     trained = 0
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, conf.batch_size())
 
-    for src_batch, trg_batch in range(conf.corpus.):
-      src_batch = fill_batch(src_batch)
-      trg_batch = fill_batch(trg_batch)
-      K = len(src_batch)
+    for batch in trains:
       hyp_batch, loss = forward(src_batch, trg_batch, src_vocab, trg_vocab, encdec, True, 0)
       loss.backward()
       opt.update()
 
-      for k in range(K):
+      for k in range(batch.batch_size()):
         trace('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained + k + 1))
         trace('  src = ' + ' '.join([x if x != '</s>' else '*' for x in src_batch[k]]))
         trace('  trg = ' + ' '.join([x if x != '</s>' else '*' for x in trg_batch[k]]))
         trace('  hyp = ' + ' '.join([x if x != '</s>' else '*' for x in hyp_batch[k]]))
 
-      trained += K
+      trained += batch.batch_size()
 
     trace('saving model ...')
     prefix = args.model + '.%03.d' % (epoch + 1)

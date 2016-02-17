@@ -80,17 +80,18 @@ def test_minbatch_randomized_from_corpus(test_conf, test_corp):
 def test_minbatch_from_corpus(test_conf, test_corp):
     train_idxs = [[1, 3]]
     test_idxs  = [[0, 2]]
-    trains, tests = MinBatch.from_corpus(test_conf, test_corp, train_idxs, test_idxs)
+    trains     = MinBatch.from_corpus(test_conf, test_corp, train_idxs)
+    tests      = MinBatch.from_corpus(test_conf, test_corp, test_idxs)
     f = lambda x: test_corp.ids_to_tokens(list(x))
 
     # I'm James.
     # He hasn't
-    assert f(trains[0].batch_at(1)) == ["i",  "he"]
-    assert f(trains[0].batch_at(2)) == ["am", "has"]
+    assert f(trains[0].data_batch_at(1)) == ["i",  "he"]
+    assert f(trains[0].data_batch_at(2)) == ["am", "has"]
 
     # <s>James</s> <v>is</v> a teacher.
     # I haven't
-    assert f(tests[0].batch_at(1)) == ["<s>",     "i"]
-    assert f(tests[0].batch_at(2)) == ["james",   "have"]
-    assert f(tests[0].batch_at(7)) == ["a",       "<pad>"]
-    assert f(tests[0].batch_at(8)) == ["teacher", "<pad>"]
+    assert f(tests[0].teach_batch_at(1)) == ["<s>",     "i"]
+    assert f(tests[0].teach_batch_at(2)) == ["james",   "have"]
+    assert f(tests[0].teach_batch_at(7)) == ["a",       "<pad>"]
+    assert f(tests[0].teach_batch_at(8)) == ["teacher", "<pad>"]

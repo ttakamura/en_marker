@@ -175,25 +175,25 @@ class MinBatch:
         brk  = int(size * 0.7)
         train_idxs = idxs[:brk]
         test_idxs  = idxs[brk:]
-        trains, tests =  MinBatch.from_corpus(conf, corpus, train_idxs, test_idxs)
+        trains     = MinBatch.from_corpus(conf, corpus, train_idxs)
+        tests      = MinBatch.from_corpus(conf, corpus, test_idxs)
         return train_idxs, test_idxs, trains, tests
 
     @staticmethod
-    def from_corpus(conf, corpus, train_idxs, test_idxs):
-        train_batches = []
-        test_batches  = []
-        for batch_idxs in train_idxs:
-            batch = MinBatch(conf, corpus, [corpus.data_at(idx) for idx in batch_idxs])
-            train_batches.append(batch)
-        for batch_idxs in test_idxs:
-            batch = MinBatch(conf, corpus, [corpus.teacher_at(idx) for idx in batch_idxs])
-            test_batches.append(batch)
-        return train_batches, test_batches
+    def from_corpus(conf, corpus, idxs_list):
+        batches = []
+        for idxs in idxs_list:
+            batch = MinBatch(conf, corpus, idxs)
+            batches.append(batch)
+        return batches
 
-    def __init__(self, conf, corpus, id_rows):
-        self.conf   = conf
-        self.corpus = corpus
-        self.rows   = self.fill_pad(id_rows)
+    def __init__(self, conf, corpus, idxs):
+        self.conf       = conf
+        self.corpus     = corpus
+        data_id_rows    = [corpus.data_at(i) for i in idxs]
+        self.data_rows  = self.fill_pad(data_id_rows)
+        teach_id_rows   = [corpus.teacher_at(i) for i in idxs]
+        self.teach_rows = self.fill_pad(teach_id_rows)
 
     def fill_pad(self, id_rows):
         pad_id     = self.corpus.token_to_id("<pad>")
@@ -207,15 +207,23 @@ class MinBatch:
 
     def boundary_symbol_batch(self):
         # Do I need return a special charactor?
-        return self.batch_at(0)
+        return self.data_batch_at(0)
 
-    def batch_at(self, seq_idx):
+    def data_batch_at(self, seq_idx):
         xp = self.conf.xp()
-        x  = xp.array([self.rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.int32)
+        x  = xp.array([self.data_rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.int32)
+        return x
+
+    def teach_batch_at(self, seq_idx):
+        xp = self.conf.xp()
+        x  = xp.array([self.teach_rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.int32)
         return x
 
     def batch_size(self):
-        return len(self.rows)
+        return len(self.data_rows)
 
-    def seq_length(self):
-        return len(self.rows[0])
+    def data_seq_length(self):
+        return len(self.data_rows[0])
+
+    def teach_seq_length(self):
+        return len(self.teach_rows[0])
