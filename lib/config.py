@@ -61,3 +61,6 @@ class Config:
 
     def batch_size(self):
         return self.args.minbatch
+
+    def vocab_size(self):
+        return self.corpus.vocab_size()

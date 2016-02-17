@@ -40,6 +40,9 @@ class Corpus(object):
     def size(self):
         return len(self.rows)
 
+    def vocab_size(self):
+        return len(self.vocab)
+
     # parse --------------------------------------------
     def parse(self, line):
         if len(line.strip()) > 0:

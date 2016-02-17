@@ -39,12 +39,12 @@ class Decoder(Chain):
     return y2, c2, h2
 
 class EncoderDecoder(Chain):
-  def __init__(self, vocab_size, conf):
+  def __init__(self, conf):
     super(EncoderDecoder, self).__init__(
-        enc = Encoder(vocab_size, conf.embed_size(), conf.hidden_size()),
-        dec = Decoder(vocab_size, conf.embed_size(), conf.hidden_size()),
+        enc = Encoder(conf.vocab_size(), conf.embed_size(), conf.hidden_size()),
+        dec = Decoder(conf.vocab_size(), conf.embed_size(), conf.hidden_size()),
     )
-    self.vocab_size = vocab_size
+    self.vocab_size = conf.vocab_size()
     self.conf = conf
 
   def reset(self, batch_size):
