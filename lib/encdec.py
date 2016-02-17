@@ -50,12 +50,22 @@ class EncoderDecoder(Chain):
   def reset(self, batch_size):
     xp = self.conf.xp()
     self.zerograds()
-    self.c = xp.zeros((batch_size, self.conf.hidden_size()))
-    self.h = xp.zeros((batch_size, self.conf.hidden_size()))
+    self.c    = Variable(xp.zeros((batch_size, self.conf.hidden_size()), dtype=np.float32))
+    self.h    = Variable(xp.zeros((batch_size, self.conf.hidden_size()), dtype=np.float32))
+    self.loss = Variable(xp.zeros((), dtype=np.float32))
 
   def encode(self, x):
+    if type(x) != Variable:
+      x = Variable(x)
     self.c, self.h = self.enc(x, self.c, self.h)
 
   def decode(self, y):
+    if type(y) != Variable:
+      y = Variable(y)
     y2, self.c, self.h = self.dec(y, self.c, self.h)
     return y2
+
+  def add_loss(self, y, t):
+    if type(t) != Variable:
+      t = Variable(t)
+    self.loss += F.softmax_cross_entropy(y, t)
