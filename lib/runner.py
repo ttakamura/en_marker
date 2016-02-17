@@ -27,7 +27,7 @@ def forward(src_batch, trg_batch, conf, encdec, is_training, generation_limit):
       t = trg_batch.batch_at(seq_idx)
       encdec.add_loss(y, t)
       output = cuda.to_cpu(y.data.argmax(1))
-      for k in range(trg_batch.batch_size()):
+      for k in range(batch_size):
         hyp_batch[k].append( conf.corpus.id_to_token(output[k]) )
     return hyp_batch, encdec.loss
 
@@ -35,10 +35,9 @@ def forward(src_batch, trg_batch, conf, encdec, is_training, generation_limit):
     while len(hyp_batch[0]) < generation_limit:
       y = encdec.decode(t)
       output = cuda.to_cpu(y.data.argmax(1))
-      t = XP.iarray(output)
+      t = np.array(output, dtype=np.int32)
       for k in range(batch_size):
-        hyp_batch[k].append(trg_itos(output[k]))
-      if all(hyp_batch[k][-1] == '</s>' for k in range(batch_size)):
+        hyp_batch[k].append( conf.corpus.id_to_token(output[k]) )
+      if all(hyp_batch[k][-1] == '<eos>' for k in range(batch_size)):
         break
-
     return hyp_batch
