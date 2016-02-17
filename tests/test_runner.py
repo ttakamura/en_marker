@@ -11,21 +11,24 @@ from encdec import EncoderDecoder
 
 test_file = "tests/test.html"
 
-def pytest_funcarg__encdec_s(request, test_corp):
-    args = "--mode train --embed 50 --hidden 30 --minbatch 15".split(" ")
+def pytest_funcarg__test_conf(request):
+    args = "--mode train --embed 50 --hidden 30 --minbatch 2".split(" ")
     conf = config.parse_args(raw_args = args)
-    conf.corpus = test_corp
-    return EncoderDecoder(conf)
+    conf.corpus = corpus.open(test_file)
+    return conf
 
-def pytest_funcarg__test_corp(request):
-    return corpus.open(test_file)
-
-def test_forward(encdec_s, test_corp):
-    conf = encdec_s.conf
-    conf.corpus = test_corp
-    train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, test_corp, 2)
+def test_forward(test_conf):
+    conf = test_conf
+    encdec = EncoderDecoder(conf)
+    train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, 2)
     src_batch = trains[0]
     trg_batch = tests[0]
-    results, loss = runner.forward(src_batch, trg_batch, conf, encdec_s, True, 100)
+    results, loss = runner.forward(src_batch, trg_batch, conf, encdec, True, 100)
     # print(results)
     assert loss.data > 0.0
+
+def test_train(test_conf):
+    conf = test_conf
+    encdec = EncoderDecoder(conf)
+    runner.train(conf)
+    assert True

@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 import sys
 import numpy
-from chainer import cuda
+from chainer import cuda, optimizers, optimizer
 
 from argparse import ArgumentParser
 
@@ -26,6 +26,7 @@ class Config:
         default_hidden    = 200
         default_epoch     = 10
         default_minbatch  = 64
+        default_lr        = 0.01
         p = ArgumentParser(description='English marker')
         p.add_argument('--mode',     default='console',        help='console, train or test')
         p.add_argument('--gpu',      default=-1)
@@ -33,6 +34,7 @@ class Config:
         p.add_argument('--hidden',   default=default_hidden,   type=int)
         p.add_argument('--epoch',    default=default_epoch,    type=int)
         p.add_argument('--minbatch', default=default_minbatch, type=int)
+        p.add_argument('--lr',       default=default_lr,       type=float)
         return p.parse_args(raw_args)
 
     def corpus(self):
@@ -64,3 +66,21 @@ class Config:
 
     def vocab_size(self):
         return self.corpus.vocab_size()
+
+    def lr(self):
+        return self.args.lr
+
+    def encdec(self):
+        return EncoderDecoder(self)
+
+    def optimizer(self):
+        return optimizers.AdaGrad(lr = conf.lr())
+
+    def setup_model(self):
+        encdec = self.encdec()
+        opt    = self.optimizer()
+        opt.setup(encdec)
+        opt.add_hook(optimizer.GradientClipping(5))
+        if self.use_gpu():
+            encdec.to_gpu()
+        return encdec, opt
