@@ -36,6 +36,7 @@ class Config:
         p.add_argument('--epoch',    default=default_epoch,    type=int)
         p.add_argument('--minbatch', default=default_minbatch, type=int)
         p.add_argument('--lr',       default=default_lr,       type=float)
+        p.add_argument('--train_file')
         return p.parse_args(raw_args)
 
     def corpus(self):
@@ -70,6 +71,9 @@ class Config:
 
     def lr(self):
         return self.args.lr
+
+    def train_file(self):
+        return self.args.train_file
 
     def encdec(self):
         return EncoderDecoder(self)

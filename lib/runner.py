@@ -50,6 +50,7 @@ def train(conf):
     logging('epoch %d/%d: ' % (epoch+1, conf.epoch()))
     trained = 0
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, conf.batch_size())
+    print(trains)
 
     for batch in trains:
       batch_size = batch.batch_size()
