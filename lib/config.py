@@ -4,6 +4,7 @@ import numpy
 from chainer import cuda, optimizers, optimizer
 
 from argparse import ArgumentParser
+from encdec import EncoderDecoder
 
 main_conf = None
 
@@ -74,7 +75,7 @@ class Config:
         return EncoderDecoder(self)
 
     def optimizer(self):
-        return optimizers.AdaGrad(lr = conf.lr())
+        return optimizers.AdaGrad(lr = self.lr())
 
     def setup_model(self):
         encdec = self.encdec()

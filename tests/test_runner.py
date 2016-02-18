@@ -29,5 +29,5 @@ def test_forward(test_conf):
 def test_train(test_conf):
     conf = test_conf
     encdec = EncoderDecoder(conf)
-    # runner.train(conf)
+    runner.train(conf)
     assert True

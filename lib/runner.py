@@ -44,6 +44,7 @@ def forward(batch, conf, encdec, is_training, generation_limit):
 
 def train(conf):
   encdec, opt = conf.setup_model()
+  corpus = conf.corpus
 
   for epoch in range(conf.epoch()):
     logging('epoch %d/%d: ' % (epoch+1, conf.epoch()))
@@ -51,24 +52,23 @@ def train(conf):
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, conf.batch_size())
 
     for batch in trains:
-      hyp_batch, loss = forward(src_batch, trg_batch, src_vocab, trg_vocab, encdec, True, 0)
+      batch_size = batch.batch_size()
+      hyp_batch, loss = forward(batch, conf, encdec, True, 0)
       loss.backward()
       opt.update()
+      trained += batch_size
+      for k in range(batch_size):
+        logging('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained))
+        logging('  source  = ' + ' '.join(corpus.ids_to_tokens( batch.data_at(k) )))
+        logging('  teacher = ' + ' '.join(corpus.ids_to_tokens( batch.teach_at(k) )))
+        logging('  predict = ' + ' '.join(hyp_batch[k]))
 
-      for k in range(batch.batch_size()):
-        trace('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained + k + 1))
-        trace('  src = ' + ' '.join([x if x != '</s>' else '*' for x in src_batch[k]]))
-        trace('  trg = ' + ' '.join([x if x != '</s>' else '*' for x in trg_batch[k]]))
-        trace('  hyp = ' + ' '.join([x if x != '</s>' else '*' for x in hyp_batch[k]]))
-
-      trained += batch.batch_size()
-
-    trace('saving model ...')
-    prefix = args.model + '.%03.d' % (epoch + 1)
-    src_vocab.save(prefix + '.srcvocab')
-    trg_vocab.save(prefix + '.trgvocab')
-    encdec.save_spec(prefix + '.spec')
-    serializers.save_hdf5(prefix + '.weights', encdec)
+    # trace('saving model ...')
+    # prefix = args.model + '.%03.d' % (epoch + 1)
+    # src_vocab.save(prefix + '.srcvocab')
+    # trg_vocab.save(prefix + '.trgvocab')
+    # encdec.save_spec(prefix + '.spec')
+    # serializers.save_hdf5(prefix + '.weights', encdec)
 
 def logging(log):
   print(log)

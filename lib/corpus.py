@@ -209,10 +209,16 @@ class MinBatch:
         # Do I need return a special charactor?
         return self.data_batch_at(0)
 
+    def data_at(self, idx):
+        return self.data_rows[idx]
+
     def data_batch_at(self, seq_idx):
         xp = self.conf.xp()
         x  = xp.array([self.data_rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.int32)
         return x
+
+    def teach_at(self, idx):
+        return self.teach_rows[idx]
 
     def teach_batch_at(self, seq_idx):
         xp = self.conf.xp()
