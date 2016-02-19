@@ -53,16 +53,15 @@ def train(conf):
     print(trains)
 
     for batch in trains:
-      batch_size = batch.batch_size()
       hyp_batch, loss = forward(batch, conf, encdec, True, 0)
       loss.backward()
       opt.update()
-      trained += batch_size
-      for k in range(batch_size):
-        logging('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained))
-        logging('  source  = ' + ' '.join(corpus.ids_to_tokens( batch.data_at(k) )))
-        logging('  teacher = ' + ' '.join(corpus.ids_to_tokens( batch.teach_at(k) )))
-        logging('  predict = ' + ' '.join(hyp_batch[k]))
+      trained += batch.batch_size()
+      report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TRAIN -------')
+
+    for batch in tests:
+      hyp_batch = forward(batch, conf, encdec, False, 15)
+      report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TEST -------')
 
     # trace('saving model ...')
     # prefix = args.model + '.%03.d' % (epoch + 1)
@@ -70,6 +69,14 @@ def train(conf):
     # trg_vocab.save(prefix + '.trgvocab')
     # encdec.save_spec(prefix + '.spec')
     # serializers.save_hdf5(prefix + '.weights', encdec)
+
+def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
+  for k in range(batch.batch_size()):
+    logging(header)
+    logging('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained))
+    logging('  source  = ' + ' '.join(corpus.ids_to_tokens( batch.data_at(k) )))
+    logging('  teacher = ' + ' '.join(corpus.ids_to_tokens( batch.teach_at(k) )))
+    logging('  predict = ' + ' '.join(hyp_batch[k]))
 
 def logging(log):
   print(log)
