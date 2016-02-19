@@ -13,5 +13,7 @@ conf.corpus = corpus.open(conf.train_file())
 
 if conf.mode() == 'console':
     embed()
+elif conf.mode() == 'train':
+    runner.train(conf)
 else:
     print 'hello'
