@@ -44,31 +44,22 @@ def forward(batch, conf, encdec, is_training, generation_limit):
 
 def train(conf):
   encdec, opt = conf.setup_model()
-  corpus = conf.corpus
 
+  corpus = conf.corpus
   for epoch in range(conf.epoch()):
     logging('epoch %d/%d: ' % (epoch+1, conf.epoch()))
     trained = 0
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, conf.batch_size())
-    print(trains)
-
     for batch in trains:
       hyp_batch, loss = forward(batch, conf, encdec, True, 0)
       loss.backward()
       opt.update()
       trained += batch.batch_size()
       report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TRAIN -------')
-
     for batch in tests:
       hyp_batch = forward(batch, conf, encdec, False, 15)
       report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TEST -------')
-
-    # trace('saving model ...')
-    # prefix = args.model + '.%03.d' % (epoch + 1)
-    # src_vocab.save(prefix + '.srcvocab')
-    # trg_vocab.save(prefix + '.trgvocab')
-    # encdec.save_spec(prefix + '.spec')
-    # serializers.save_hdf5(prefix + '.weights', encdec)
+    save(conf, encdec, epoch)
 
 def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
   for k in range(batch.batch_size()):
@@ -77,6 +68,13 @@ def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
     logging('  source  = ' + ' '.join(corpus.ids_to_tokens( batch.data_at(k) )))
     logging('  teacher = ' + ' '.join(corpus.ids_to_tokens( batch.teach_at(k) )))
     logging('  predict = ' + ' '.join(hyp_batch[k]))
+
+def save(conf, encdec, epoch):
+  conf.save(encdec, epoch)
+
+def load(prefix)
+  encdec, opt, conf = conf.Config.load(prefix)
+  return encdec, opt, conf
 
 def logging(log):
   print(log)

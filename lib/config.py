@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 import sys
+import yaml
 import numpy
-from chainer import cuda, optimizers, optimizer
+from chainer import cuda, optimizers, optimizer, serializers
 
 from argparse import ArgumentParser
 from encdec import EncoderDecoder
@@ -29,15 +30,61 @@ class Config:
         default_minbatch  = 64
         default_lr        = 0.01
         p = ArgumentParser(description='English marker')
-        p.add_argument('--mode',     default='console',        help='console, train or test')
-        p.add_argument('--gpu',      default=-1)
-        p.add_argument('--embed',    default=default_embed,    type=int)
-        p.add_argument('--hidden',   default=default_hidden,   type=int)
-        p.add_argument('--epoch',    default=default_epoch,    type=int)
-        p.add_argument('--minbatch', default=default_minbatch, type=int)
-        p.add_argument('--lr',       default=default_lr,       type=float)
-        p.add_argument('--train_file')
+        p.add_argument('--mode',       default='console',        help='console, train or test')
+        p.add_argument('--model',      default='encdec',         help='encdec or hoge')
+        p.add_argument('--gpu',        default=-1)
+        p.add_argument('--embed',      default=default_embed,    type=int)
+        p.add_argument('--hidden',     default=default_hidden,   type=int)
+        p.add_argument('--epoch',      default=default_epoch,    type=int)
+        p.add_argument('--minbatch',   default=default_minbatch, type=int)
+        p.add_argument('--lr',         default=default_lr,       type=float)
+        p.add_argument('--train_file', default='data/original.html')
         return p.parse_args(raw_args)
+
+    def save(self, prefix, encdec, epoch):
+        settings = {
+            "model":       self.model(),
+            "train_file":  self.train_file(),
+            "embed":       self.embed_size(),
+            "hidden":      self.hidden_size(),
+            "minbatch":    self.batch_size(),
+            "lr":          self.lr(),
+            "epoch":       epoch
+        }
+        prefix = prefix + "_".join([k+":"+str(v) for k,v in settings.items()]).replace("/", "-").replace(".", "-")
+        self.corpus.save(prefix + '.vocab')
+        self.serialize(prefix + '.conf', settings)
+        serializers.save_npz(prefix + '.weights', encdec)
+        return prefix
+
+    @staticmethod
+    def load(prefix, raw_args=None):
+        conf = Config.deserialize(prefix + '.conf', raw_args=raw_args)
+        conf.corpus = EnMarkCorpus.load(prefix + '.vocab')
+        epoch, opt = conf.setup_model()
+        serializers.load_npz(prefix + '.weights', encdec)
+        return encdec, opt, conf
+
+    def serialize(self, file_path, data):
+        with open(file_path, 'w') as file:
+            yaml.dump(data, file, encoding='utf8', allow_unicode=True)
+
+    @staticmethod
+    def deserialize(file_path, raw_args=None):
+        data = None
+        with open(file_path, 'r') as file:
+            data = yaml.load(file.read())
+        conf = parse_args(raw_args)
+        conf.merge(data)
+        return conf
+
+    def merge(self, new_args):
+        self.args.model      = new_args['model']
+        self.args.train_file = new_args['train_file']
+        self.args.embed      = new_args['embed']
+        self.args.hidden     = new_args['hidden']
+        self.args.minbatch   = new_args['minbatch']
+        self.args.lr         = new_args['lr']
 
     def corpus(self):
         return self.corpus
@@ -47,6 +94,9 @@ class Config:
 
     def mode(self):
         return self.args.mode
+
+    def model(self):
+        return self.args.model
 
     def gpu(self):
         return self.args.gpu

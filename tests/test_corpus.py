@@ -95,3 +95,8 @@ def test_minbatch_from_corpus(test_conf, test_corp):
     assert f(tests[0].teach_batch_at(2)) == ["james",   "have"]
     assert f(tests[0].teach_batch_at(7)) == ["a",       "<pad>"]
     assert f(tests[0].teach_batch_at(8)) == ["teacher", "<pad>"]
+
+def test_save_and_load(test_corp):
+    test_corp.save("./tmp/test_corp.vocab")
+    new_corp = corpus.EnMarkCorpus.load("./tmp/test_corp.vocab")
+    assert test_corp == new_corp

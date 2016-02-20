@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import codecs
+import yaml
 import re
 import numpy as np
 from nltk.tag.perceptron import PerceptronTagger
@@ -23,7 +24,7 @@ def open(path, tagger=DummyPosTagger()):
     return c
 
 class Corpus(object):
-    def __init__(self, input_file):
+    def __init__(self, input_file=None):
         self.input_file = input_file
         self.rows = []
         self.vocab = {}
@@ -31,6 +32,39 @@ class Corpus(object):
         for char in train_allow_tags:
             self.add_vocab(char)
         self.train_allow_tag_ids = self.tokens_to_ids(train_allow_tags)
+
+    def __eq__(self, other):
+        return (self.rows  == other.rows) and \
+               (self.vocab == other.vocab) and \
+               (self.bacov == other.bacov)
+
+    def __ne__(self, other):
+        return not self == other
+
+    def save(self, file_path):
+        data = {
+            'rows':  self.rows,
+            'vocab': self.vocab,
+            'bacov': self.bacov
+        }
+        with codecs.open(file_path, 'w') as file:
+            yaml.dump(data, file, encoding='utf8', allow_unicode=True)
+
+    @staticmethod
+    def load(file_path):
+        corpus = Corpus()
+        corpus.deserialize(file_path)
+        return corpus
+
+    def deserialize(self, file_path):
+        with codecs.open(file_path, 'r') as file:
+            data = yaml.load(file.read())
+            self.merge(data)
+
+    def merge(self, new_data):
+        self.rows = new_data['rows']
+        self.vocab = new_data['vocab']
+        self.bacov = new_data['bacov']
 
     def open(self):
         with codecs.open(self.input_file) as f:
@@ -113,10 +147,16 @@ class Corpus(object):
         return re.match(meta_tag_regexp, token)
 
 class EnMarkCorpus(Corpus):
-    def __init__(self, input_file, tagger=None):
+    def __init__(self, input_file=None, tagger=None):
         super(EnMarkCorpus, self).__init__(input_file)
         self.pos_rows = []
         self.tagger   = tagger
+
+    @staticmethod
+    def load(file_path):
+        corpus = EnMarkCorpus()
+        corpus.deserialize(file_path)
+        return corpus
 
     def parse(self, line):
         if len(line.strip()) > 0:
