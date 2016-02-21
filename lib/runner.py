@@ -62,13 +62,15 @@ def train(conf):
       hyp_batch = forward(batch, conf, encdec, False, 15)
       report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TEST -------')
 
-    if (epoch % 10) == 1:
+    if (epoch % 10) == 0:
       save(conf, encdec, epoch)
 
 def predict(conf, encdec, source):
-  batch = MinBatch.from_text(source)
+  batch = MinBatch.from_text(conf, conf.corpus, source)
+  print ' '.join(conf.corpus.ids_to_tokens(batch.data_at(0)))
   hyp   = forward(batch, conf, encdec, False, 30)
-  return hyp
+  print ' '.join(hyp[0])
+  # return hyp
 
 def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
   for k in range(batch.batch_size()):
@@ -82,7 +84,7 @@ def save(conf, encdec, epoch):
   conf.save('model/', encdec, epoch)
 
 def load(prefix):
-  encdec, opt, conf = conf.Config.load(prefix)
+  encdec, opt, conf = config.Config.load(prefix)
   return encdec, opt, conf
 
 def logging(log):

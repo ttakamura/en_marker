@@ -25,6 +25,8 @@ class Config:
         self.corpus = None
 
     def __eq__(self, other):
+        if other == None:
+            return False
         return (self.model()       == other.model()) and \
                (self.train_file()  == other.train_file()) and \
                (self.embed_size()  == other.embed_size()) and \
@@ -51,6 +53,7 @@ class Config:
         p.add_argument('--minbatch',   default=default_minbatch, type=int)
         p.add_argument('--lr',         default=default_lr,       type=float)
         p.add_argument('--train_file', default='data/original.html')
+        p.add_argument('--load_prefix', default='model/sample',  help='load from the model')
         return p.parse_args(raw_args)
 
     def save(self, prefix, encdec, epoch):
@@ -97,6 +100,9 @@ class Config:
         self.args.hidden     = new_args['hidden']
         self.args.minbatch   = new_args['minbatch']
         self.args.lr         = new_args['lr']
+
+    def load_prefix(self):
+        return self.args.load_prefix
 
     def corpus(self):
         return self.corpus

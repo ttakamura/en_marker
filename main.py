@@ -15,5 +15,8 @@ if conf.mode() == 'console':
     embed()
 elif conf.mode() == 'train':
     runner.train(conf)
+elif conf.mode() == 'restore_console':
+    encdec, opt, conf = runner.load(conf.load_prefix())
+    embed()
 else:
     print 'hello'
