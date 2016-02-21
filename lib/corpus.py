@@ -223,17 +223,28 @@ class MinBatch:
     def from_corpus(conf, corpus, idxs_list):
         batches = []
         for idxs in idxs_list:
-            batch = MinBatch(conf, corpus, idxs)
+            data_id_rows  = [corpus.data_at(i) for i in idxs]
+            teach_id_rows = [corpus.teacher_at(i) for i in idxs]
+            batch = MinBatch(conf, corpus, data_id_rows, teach_id_rows)
             batches.append(batch)
         return batches
 
-    def __init__(self, conf, corpus, idxs):
-        self.conf       = conf
-        self.corpus     = corpus
-        data_id_rows    = [corpus.data_at(i) for i in idxs]
-        self.data_rows  = self.fill_pad(data_id_rows)
-        teach_id_rows   = [corpus.teacher_at(i) for i in idxs]
-        self.teach_rows = self.fill_pad(teach_id_rows)
+    @staticmethod
+    def from_text(conf, corpus, source):
+        if not isinstance(source, list):
+            # ["hello world"]
+            source = [source]
+        source = [corpus.encode(s) for s in source]
+        return MinBatch(conf, corpus, source)
+
+    def __init__(self, conf, corpus, data_id_rows, teach_id_rows=None):
+        self.conf      = conf
+        self.corpus    = corpus
+        self.data_rows = self.fill_pad(data_id_rows)
+        if teach_id_rows == None:
+            self.teach_rows = None
+        else:
+            self.teach_rows = self.fill_pad(teach_id_rows)
 
     def fill_pad(self, id_rows):
         pad_id     = self.corpus.token_to_id("<pad>")

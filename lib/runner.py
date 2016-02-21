@@ -65,6 +65,11 @@ def train(conf):
     if (epoch % 10) == 1:
       save(conf, encdec, epoch)
 
+def predict(conf, encdec, source):
+  batch = MinBatch.from_text(source)
+  hyp   = forward(batch, conf, encdec, False, 30)
+  return hyp
+
 def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
   for k in range(batch.batch_size()):
     logging(header)
