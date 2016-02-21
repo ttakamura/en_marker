@@ -4,6 +4,7 @@ import yaml
 import numpy
 from chainer import cuda, optimizers, optimizer, serializers
 
+import corpus
 from argparse import ArgumentParser
 from encdec import EncoderDecoder
 
@@ -22,6 +23,17 @@ class Config:
     def __init__(self, raw_args):
         self.args = self.parse_args(raw_args)
         self.corpus = None
+
+    def __eq__(self, other):
+        return (self.model()       == other.model()) and \
+               (self.train_file()  == other.train_file()) and \
+               (self.embed_size()  == other.embed_size()) and \
+               (self.hidden_size() == other.hidden_size()) and \
+               (self.batch_size()  == other.batch_size()) and \
+               (self.lr()          == other.lr())
+
+    def __ne__(self, other):
+        return not self == other
 
     def parse_args(self, raw_args):
         default_embed     = 100
@@ -60,8 +72,8 @@ class Config:
     @staticmethod
     def load(prefix, raw_args=None):
         conf = Config.deserialize(prefix + '.conf', raw_args=raw_args)
-        conf.corpus = EnMarkCorpus.load(prefix + '.vocab')
-        epoch, opt = conf.setup_model()
+        conf.corpus = corpus.EnMarkCorpus.load(prefix + '.vocab')
+        encdec, opt = conf.setup_model()
         serializers.load_npz(prefix + '.weights', encdec)
         return encdec, opt, conf
 

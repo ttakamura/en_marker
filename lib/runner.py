@@ -70,9 +70,9 @@ def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
     logging('  predict = ' + ' '.join(hyp_batch[k]))
 
 def save(conf, encdec, epoch):
-  conf.save(encdec, epoch)
+  conf.save('model/', encdec, epoch)
 
-def load(prefix)
+def load(prefix):
   encdec, opt, conf = conf.Config.load(prefix)
   return encdec, opt, conf
 
