@@ -32,5 +32,5 @@ def test_config_gpu(config_a):
 def test_config_save_and_load(config_a):
     encdec = EncoderDecoder(config_a)
     prefix = config_a.save('tmp/test_conf', encdec, 10)
-    encdec, opt, new_conf = config.Config.load(prefix, raw_args=['--mode', 'test'])
+    new_encdec, opt, new_conf = config.Config.load(prefix, raw_args=['--mode', 'test'])
     assert config_a == new_conf
