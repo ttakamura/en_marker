@@ -50,16 +50,20 @@ def train(conf):
     logging('epoch %d/%d: ' % (epoch+1, conf.epoch()))
     trained = 0
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, conf.batch_size())
+
     for batch in trains:
       hyp_batch, loss = forward(batch, conf, encdec, True, 0)
       loss.backward()
       opt.update()
       trained += batch.batch_size()
       report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TRAIN -------')
+
     for batch in tests:
       hyp_batch = forward(batch, conf, encdec, False, 15)
       report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TEST -------')
-    save(conf, encdec, epoch)
+
+    if (epoch % 10) == 1:
+      save(conf, encdec, epoch)
 
 def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
   for k in range(batch.batch_size()):
