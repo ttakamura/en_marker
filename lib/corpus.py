@@ -210,13 +210,13 @@ class EnMarkCorpus(Corpus):
 class MinBatch:
     @staticmethod
     def randomized_from_corpus(conf, corpus, batch_size):
-        size = int(corpus.size() / batch_size)
-        idxs = np.random.permutation(size * batch_size).reshape(size, batch_size)
-        brk  = int(size * 0.7)
-        train_idxs = idxs[:brk]
-        test_idxs  = idxs[brk:]
-        trains     = MinBatch.from_corpus(conf, corpus, train_idxs)
-        tests      = MinBatch.from_corpus(conf, corpus, test_idxs)
+        train_size  = int(corpus.size() / 3 * 2) / batch_size
+        test_size   = int(corpus.size() / 3 * 1) / batch_size
+        test_offset = train_size * batch_size
+        train_idxs  = np.random.permutation(train_size * batch_size).reshape(train_size, batch_size)
+        test_idxs   = np.random.permutation(test_size  * batch_size).reshape(test_size,  batch_size) + test_offset
+        trains      = MinBatch.from_corpus(conf, corpus, train_idxs)
+        tests       = MinBatch.from_corpus(conf, corpus, test_idxs)
         return train_idxs, test_idxs, trains, tests
 
     @staticmethod
@@ -245,6 +245,14 @@ class MinBatch:
             self.teach_rows = None
         else:
             self.teach_rows = self.fill_pad(teach_id_rows)
+
+    def __eq__(self, other):
+        return (self.data_rows  == other.data_rows) and \
+               (self.teach_rows == other.teach_rows) and \
+               (self.corpus     == other.corpus)
+
+    def __ne__(self, other):
+        return not self == other
 
     def fill_pad(self, id_rows):
         pad_id     = self.corpus.token_to_id("<pad>")

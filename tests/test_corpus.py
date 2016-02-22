@@ -77,6 +77,13 @@ def test_minbatch_randomized_from_corpus(test_conf, test_corp):
     assert train_idxs.shape == (2, 2)
     assert test_idxs.shape  == (1, 2)
 
+    train_idxs2, test_idxs2, _, _ = MinBatch.randomized_from_corpus(test_conf, test_corp, 2)
+    print train_idxs
+    print test_idxs2
+    for i in test_idxs2.reshape(2):
+        for j in train_idxs.reshape(4):
+            assert i != j
+
 def test_minbatch_from_corpus(test_conf, test_corp):
     train_idxs = [[1, 3]]
     test_idxs  = [[0, 2]]
