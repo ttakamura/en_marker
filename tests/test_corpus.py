@@ -107,3 +107,9 @@ def test_save_and_load(test_corp):
     test_corp.save("./tmp/test_corp.vocab")
     new_corp = corpus.EnMarkCorpus.load("./tmp/test_corp.vocab")
     assert test_corp == new_corp
+
+def test_bleu_score(test_corp):
+    candidate  = ['this', 'is', 'a', 'pen']
+    references = [['this', 'is', 'a', 'pen']]
+    score = test_corp.bleu_score(candidate, references)
+    assert score == 1.0

@@ -74,11 +74,15 @@ def predict(conf, encdec, source):
 
 def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
   for k in range(batch.batch_size()):
+    data_tokens  = corpus.ids_to_tokens(batch.data_at(k))
+    teach_tokens = corpus.ids_to_tokens(batch.teach_at(k))
+    hyp_tokens   = hyp_batch[k]
     logging(header)
     logging('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained))
-    logging('  source  = ' + ' '.join(corpus.ids_to_tokens( batch.data_at(k) )))
-    logging('  teacher = ' + ' '.join(corpus.ids_to_tokens( batch.teach_at(k) )))
-    logging('  predict = ' + ' '.join(hyp_batch[k]))
+    logging('  source  = ' + ' '.join(data_tokens))
+    logging('  teacher = ' + ' '.join(teach_tokens))
+    logging('  predict = ' + ' '.join(hyp_tokens))
+    logging('  BLEU    = {0:.3f}'.format( corpus.bleu_score(hyp_tokens, [teach_tokens]) ))
 
 def save(conf, encdec, epoch):
   conf.save('model/', encdec, epoch)

@@ -4,6 +4,7 @@ import yaml
 import re
 import numpy as np
 from nltk.tag.perceptron import PerceptronTagger
+from nltk.translate.bleu_score import bleu
 
 num_regexp      = re.compile(r'-?[0-9]+[,.0-9]+')
 meta_tag_regexp = re.compile(r'(<[^> ]+>)')
@@ -145,6 +146,12 @@ class Corpus(object):
 
     def is_meta_tag(self, token):
         return re.match(meta_tag_regexp, token)
+
+    def bleu_score(self, candidate, references):
+        weights = [0.5, 0.5]
+        # candidate  = [str(x) for x in candidate]
+        # references = [[str(x) for x in ref] for ref in references]
+        return bleu(references, candidate, weights)
 
 class EnMarkCorpus(Corpus):
     def __init__(self, input_file=None, tagger=None):
