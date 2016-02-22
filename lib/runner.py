@@ -44,6 +44,8 @@ def forward(batch, conf, encdec, is_training, generation_limit):
 
 def train(conf):
   encdec, opt = conf.setup_model()
+  epoch_train_blue_scores = []
+  epoch_test_blue_scores  = []
 
   corpus = conf.corpus
   for epoch in range(conf.epoch()):
@@ -68,6 +70,9 @@ def train(conf):
       test_blue_scores += scores
 
     report_epoch(conf, epoch, train_blue_scores, test_blue_scores)
+
+    epoch_train_blue_scores.append( np.array(train_blue_scores).mean() )
+    epoch_test_blue_scores.append(  np.array(test_blue_scores).mean() )
 
     if (epoch % 10) == 0:
       save(conf, encdec, epoch)
