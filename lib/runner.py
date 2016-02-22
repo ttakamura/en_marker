@@ -49,6 +49,9 @@ def train(conf):
   for epoch in range(conf.epoch()):
     logging('epoch %d/%d: ' % (epoch+1, conf.epoch()))
     trained = 0
+    train_blue_scores = []
+    test_blue_scores  = []
+
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, conf.batch_size())
 
     for batch in trains:
@@ -56,11 +59,15 @@ def train(conf):
       loss.backward()
       opt.update()
       trained += batch.batch_size()
-      report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TRAIN -------')
+      scores = report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TRAIN -------')
+      train_blue_scores += scores
 
     for batch in tests:
       hyp_batch = forward(batch, conf, encdec, False, 15)
-      report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TEST -------')
+      scores = report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TEST -------')
+      test_blue_scores += scores
+
+    report_epoch(conf, epoch, train_blue_scores, test_blue_scores)
 
     if (epoch % 10) == 0:
       save(conf, encdec, epoch)
@@ -72,17 +79,29 @@ def predict(conf, encdec, source):
   print ' '.join(hyp[0])
   # return hyp
 
+def report_epoch(conf, epoch, train_blue_scores, test_blue_scores):
+  train_mean = np.array(train_blue_scores).mean()
+  test_mean  = np.array(test_blue_scores).mean()
+  logging('================================================================')
+  logging('finish epoch %3d/%3d - train BLEU: %.3f - test BLEU: %.3f' % (epoch + 1, conf.epoch(), train_mean, test_mean))
+  logging('================================================================')
+  logging('')
+
 def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
+  bleu_scores = []
   for k in range(batch.batch_size()):
     data_tokens  = corpus.ids_to_tokens(batch.data_at(k))
     teach_tokens = corpus.ids_to_tokens(batch.teach_at(k))
     hyp_tokens   = hyp_batch[k]
+    bleu_score   = corpus.bleu_score(hyp_tokens, [teach_tokens])
+    bleu_scores.append(bleu_score)
     logging(header)
     logging('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained))
     logging('  source  = ' + ' '.join(data_tokens))
     logging('  teacher = ' + ' '.join(teach_tokens))
     logging('  predict = ' + ' '.join(hyp_tokens))
-    logging('  BLEU    = {0:.3f}'.format( corpus.bleu_score(hyp_tokens, [teach_tokens]) ))
+    logging('  BLEU    = {0:.3f}'.format(bleu_score))
+  return bleu_scores
 
 def save(conf, encdec, epoch):
   conf.save('model/', encdec, epoch)
