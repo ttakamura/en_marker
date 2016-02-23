@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import numpy as np
+import matplotlib.pyplot as plt
 
 import chainer
 from chainer import Chain, Variable, cuda, optimizer, optimizers, serializers
@@ -46,14 +47,13 @@ def train(conf):
   encdec, opt = conf.setup_model()
   epoch_train_blue_scores = []
   epoch_test_blue_scores  = []
-
   corpus = conf.corpus
+
   for epoch in range(conf.epoch()):
     logging('epoch %d/%d: ' % (epoch+1, conf.epoch()))
     trained = 0
     train_blue_scores = []
     test_blue_scores  = []
-
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, conf.batch_size())
 
     for batch in trains:
@@ -70,12 +70,13 @@ def train(conf):
       test_blue_scores += scores
 
     report_epoch(conf, epoch, train_blue_scores, test_blue_scores)
-
     epoch_train_blue_scores.append( np.array(train_blue_scores).mean() )
     epoch_test_blue_scores.append(  np.array(test_blue_scores).mean() )
-
     if (epoch % 10) == 0:
       save(conf, encdec, epoch)
+
+  report_bleu_graph(epoch_train_blue_scores, epoch_test_blue_scores)
+  return epoch_train_blue_scores, epoch_test_blue_scores
 
 def predict(conf, encdec, source):
   batch = MinBatch.from_text(conf, conf.corpus, source)
@@ -107,6 +108,12 @@ def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
     logging('  predict = ' + ' '.join(hyp_tokens))
     logging('  BLEU    = {0:.3f}'.format(bleu_score))
   return bleu_scores
+
+def report_bleu_graph(train_blue_scores, test_blue_scores):
+  plt.plot(train_blue_scores)
+  plt.plot(test_blue_scores)
+  plt.show()
+  # plt.savefig("image.png")
 
 def save(conf, encdec, epoch):
   conf.save('model/', encdec, epoch)
