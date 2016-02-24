@@ -75,7 +75,6 @@ def train(conf):
     if (epoch % 10) == 0:
       save(conf, encdec, epoch)
 
-  report_bleu_graph(epoch_train_blue_scores, epoch_test_blue_scores)
   return epoch_train_blue_scores, epoch_test_blue_scores
 
 def predict(conf, encdec, source):
