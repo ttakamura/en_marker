@@ -16,7 +16,7 @@ train_allow_tags = ["<unk>", "<bos>", "<pad>", "<eos>", "<br>"]
 
 class DummyPosTagger:
     def tag(self, tokens):
-        return [(token, "NN") for token in tokens]
+        return [(token, "DUMMY") for token in tokens]
 
 # def open(path, tagger=PerceptronTagger()):
 def open(path, tagger=DummyPosTagger()):
@@ -28,6 +28,7 @@ class Corpus(object):
     def __init__(self, input_file=None):
         self.input_file = input_file
         self.rows = []
+        self.pos_rows = []
         self.vocab = {}
         self.bacov = {}
         self.frequency = {}
@@ -38,6 +39,7 @@ class Corpus(object):
 
     def __eq__(self, other):
         return (self.rows  == other.rows) and \
+               (self.pos_rows  == other.pos_rows) and \
                (self.vocab == other.vocab) and \
                (self.bacov == other.bacov)
 
@@ -47,6 +49,7 @@ class Corpus(object):
     def save(self, file_path):
         data = {
             'rows':  self.rows,
+            'pos':   self.pos_rows,
             'vocab': self.vocab,
             'bacov': self.bacov
         }
@@ -66,6 +69,7 @@ class Corpus(object):
 
     def merge(self, new_data):
         self.rows = new_data['rows']
+        self.pos_rows = new_data['pos']
         self.vocab = new_data['vocab']
         self.bacov = new_data['bacov']
 
@@ -136,9 +140,12 @@ class Corpus(object):
 
     # X vector -------------------------------------------
     def data_at(self, index):
-        return [self.convert_minor_word(id) for id in self.rows[index] if not self.is_teacher_tag(id)]
+        return [self.convert_minor_word(id, word_idx, index)
+                for word_idx, id
+                in enumerate(self.rows[index])
+                if not self.is_teacher_tag(id)]
 
-    def convert_minor_word(self, id):
+    def convert_minor_word(self, id, word_index, row_index):
         if self.is_minor_word(id):
             return self.token_to_id("<unk>")
         else:
@@ -146,9 +153,6 @@ class Corpus(object):
 
     def is_minor_word(self, id):
         return self.frequency[id] <= self.minor_word_frequency
-
-    def pos_tag_at(self, index):
-        return hoge
 
     # Y vector --------------------------------------------
     def teacher_at(self, index):
@@ -172,8 +176,7 @@ class Corpus(object):
 class EnMarkCorpus(Corpus):
     def __init__(self, input_file=None, tagger=None):
         super(EnMarkCorpus, self).__init__(input_file)
-        self.pos_rows = []
-        self.tagger   = tagger
+        self.tagger = tagger
 
     @staticmethod
     def load(file_path):
@@ -209,6 +212,15 @@ class EnMarkCorpus(Corpus):
                 idx += 1
             pos_tags[idx] = "<POS:{0}>".format(tag)
         return pos_tags
+
+    def convert_minor_word(self, id, word_index, row_index):
+        if self.is_minor_word(id):
+            return self.pos_tag_at(row_index)[word_index]
+        else:
+            return id
+
+    def pos_tag_at(self, index):
+        return self.pos_rows[index]
 
     def split_text(self, line):
         line = '<bos>' + line.replace('\n', '<br>') + '<eos>'

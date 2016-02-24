@@ -3,6 +3,7 @@ import pytest
 import numpy as np
 import sys
 sys.path.append('lib')
+from nltk.tag.perceptron import PerceptronTagger
 
 import corpus
 from corpus import MinBatch
@@ -14,6 +15,9 @@ test_file = "tests/test.html"
 
 def pytest_funcarg__test_corp(request):
     return corpus.open(test_file, tagger=corpus.DummyPosTagger())
+
+def pytest_funcarg__pos_tag_corp(request):
+    return corpus.open(test_file, tagger=PerceptronTagger())
 
 def pytest_funcarg__test_conf(request):
     args = "--mode train".split(" ")
@@ -59,7 +63,7 @@ def test_decode(test_corp):
     assert "<bos> james is . <eos>" == test_corp.decode([1, 6, 9, 13, 3])
 
 def test_data_at(test_corp):
-    assert test_corp.ids_to_tokens(test_corp.data_at(0)) == ["<bos>", "<unk>", "is", "a", "<unk>", ".", "<br>", "<eos>"]
+    assert test_corp.ids_to_tokens(test_corp.data_at(0)) == ["<bos>", "<POS:DUMMY>", "is", "a", "<POS:DUMMY>", ".", "<br>", "<eos>"]
 
 def test_teacher_at(test_corp):
     assert test_corp.ids_to_tokens(test_corp.teacher_at(0)) == ["<bos>", "<sj>", "james", "</sj>", "<v>", "is", "</v>", "a", "teacher", ".", "<br>", "<eos>"]
@@ -70,7 +74,7 @@ def test_unknown_word(test_corp):
 def test_pos_tag(test_corp):
     tokens = ["james", "</sj>", "<v>", "is", "</v>", "teacher"]
     tags   = test_corp.pos_tag(tokens)
-    assert tags == ["<POS:NN>", "<POS:META>", "<POS:META>", "<POS:NN>", "<POS:META>", "<POS:NN>"]
+    assert tags == ["<POS:DUMMY>", "<POS:META>", "<POS:META>", "<POS:DUMMY>", "<POS:META>", "<POS:DUMMY>"]
 
 def test_minbatch_randomized_from_corpus(test_conf, test_corp):
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(test_conf, test_corp, 2)
@@ -118,3 +122,11 @@ def test_is_minor_word(test_corp):
     assert test_corp.is_minor_word(test_corp.token_to_id("tom"))   == True
     assert test_corp.is_minor_word(test_corp.token_to_id("james")) == True
     assert test_corp.is_minor_word(test_corp.token_to_id("fumi"))  == True
+
+def test_convert_minor_word(pos_tag_corp):
+    test_corp = pos_tag_corp
+    idx   = 2
+    james = test_corp.get_row(0)[idx]
+    assert james == "james"
+    result = test_corp.convert_minor_word(test_corp.token_to_id("james"), idx, 0)
+    assert test_corp.id_to_token(result) == "<POS:NNS>"

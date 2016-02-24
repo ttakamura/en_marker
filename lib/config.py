@@ -102,6 +102,11 @@ class Config:
         self.args.minbatch   = new_args['minbatch']
         self.args.lr         = new_args['lr']
 
+    def open_corpus(self):
+        self.corpus = corpus.open(self.train_file())
+        self.corpus.minor_word_frequency = self.minor_word()
+        return self.corpus
+
     def load_prefix(self):
         return self.args.load_prefix
 
