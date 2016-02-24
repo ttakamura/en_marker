@@ -30,6 +30,8 @@ class Corpus(object):
         self.rows = []
         self.vocab = {}
         self.bacov = {}
+        self.frequency = {}
+        self.minor_word_frequency = 1
         for char in train_allow_tags:
             self.add_vocab(char)
         self.train_allow_tag_ids = self.tokens_to_ids(train_allow_tags)
@@ -95,6 +97,10 @@ class Corpus(object):
             id = len(self.vocab)
             self.vocab[char] = id
             self.bacov[id] = char
+            self.frequency[id] = 1
+        else:
+            id = self.vocab[char]
+            self.frequency[id] += 1
 
     # encode -------------------------------------------
     def encode(self, str):
@@ -128,13 +134,23 @@ class Corpus(object):
     def id_to_token(self, id):
         return self.bacov[id]
 
-    # X and Y -------------------------------------------
+    # X vector -------------------------------------------
     def data_at(self, index):
-        return [id for id in self.rows[index] if not self.is_teacher_tag(id)]
+        return [self.convert_minor_word(id) for id in self.rows[index] if not self.is_teacher_tag(id)]
+
+    def convert_minor_word(self, id):
+        if self.is_minor_word(id):
+            return self.token_to_id("<unk>")
+        else:
+            return id
+
+    def is_minor_word(self, id):
+        return self.frequency[id] <= self.minor_word_frequency
 
     def pos_tag_at(self, index):
         return hoge
 
+    # Y vector --------------------------------------------
     def teacher_at(self, index):
         return [id for id in self.rows[index]]
 

@@ -54,6 +54,7 @@ class Config:
         p.add_argument('--lr',         default=default_lr,       type=float)
         p.add_argument('--train_file', default='data/original.html')
         p.add_argument('--load_prefix', default='model/sample',  help='load from the model')
+        p.add_argument('--minor_word', default=1,                type=int, help='minimum frequency of minor-word')
         return p.parse_args(raw_args)
 
     def save(self, prefix, encdec, epoch):
@@ -142,6 +143,9 @@ class Config:
 
     def train_file(self):
         return self.args.train_file
+
+    def minor_word(self):
+        return self.args.minor_word
 
     def encdec(self):
         return EncoderDecoder(self)

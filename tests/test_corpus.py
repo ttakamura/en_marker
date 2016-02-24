@@ -31,7 +31,7 @@ def test_parse(test_corp):
     assert test_corp.get_row(0) == ["<bos>", "<sj>", "james", "</sj>", "<v>", "is", "</v>", "a", "teacher", ".", "<br>", "<eos>"]
 
 def test_parse_abbrev(test_corp):
-    assert test_corp.get_row(1) == ["<bos>", "i", "am", "james", ".", "<br>", "<eos>"]
+    assert test_corp.get_row(1) == ["<bos>", "i", "am", "tom", ".", "<br>", "<eos>"]
     assert test_corp.get_row(2) == ["<bos>", "i", "have", "not", "<br>", "<eos>"]
     assert test_corp.get_row(3) == ["<bos>", "he", "has", "not", "<br>", "<eos>"]
     assert test_corp.get_row(4) == ["<bos>", "what", "is", "up", "<br>", "<eos>"]
@@ -59,7 +59,7 @@ def test_decode(test_corp):
     assert "<bos> james is . <eos>" == test_corp.decode([1, 6, 9, 13, 3])
 
 def test_data_at(test_corp):
-    assert test_corp.ids_to_tokens(test_corp.data_at(0)) == ["<bos>", "james", "is", "a", "teacher", ".", "<br>", "<eos>"]
+    assert test_corp.ids_to_tokens(test_corp.data_at(0)) == ["<bos>", "<unk>", "is", "a", "<unk>", ".", "<br>", "<eos>"]
 
 def test_teacher_at(test_corp):
     assert test_corp.ids_to_tokens(test_corp.teacher_at(0)) == ["<bos>", "<sj>", "james", "</sj>", "<v>", "is", "</v>", "a", "teacher", ".", "<br>", "<eos>"]
@@ -74,14 +74,12 @@ def test_pos_tag(test_corp):
 
 def test_minbatch_randomized_from_corpus(test_conf, test_corp):
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(test_conf, test_corp, 2)
-    assert train_idxs.shape == (2, 2)
+    assert train_idxs.shape == (3, 2)
     assert test_idxs.shape  == (1, 2)
 
     train_idxs2, test_idxs2, _, _ = MinBatch.randomized_from_corpus(test_conf, test_corp, 2)
-    print train_idxs
-    print test_idxs2
     for i in test_idxs2.reshape(2):
-        for j in train_idxs.reshape(4):
+        for j in train_idxs.reshape(6):
             assert i != j
 
 def test_minbatch_from_corpus(test_conf, test_corp):
@@ -113,3 +111,10 @@ def test_bleu_score(test_corp):
     references = [['this', 'is', 'a', 'pen']]
     score = test_corp.bleu_score(candidate, references)
     assert score == 1.0
+
+def test_is_minor_word(test_corp):
+    assert test_corp.is_minor_word(test_corp.token_to_id("i"))     == False
+    assert test_corp.is_minor_word(test_corp.token_to_id("have"))  == False
+    assert test_corp.is_minor_word(test_corp.token_to_id("tom"))   == True
+    assert test_corp.is_minor_word(test_corp.token_to_id("james")) == True
+    assert test_corp.is_minor_word(test_corp.token_to_id("fumi"))  == True
