@@ -28,7 +28,7 @@ def test_size(test_corp):
     assert 5 < test_corp.size()
 
 def test_parse(test_corp):
-    assert test_corp.get_row(0) == ["<bos>", "<s>", "james", "</s>", "<v>", "is", "</v>", "a", "teacher", ".", "<br>", "<eos>"]
+    assert test_corp.get_row(0) == ["<bos>", "<sj>", "james", "</sj>", "<v>", "is", "</v>", "a", "teacher", ".", "<br>", "<eos>"]
 
 def test_parse_abbrev(test_corp):
     assert test_corp.get_row(1) == ["<bos>", "i", "am", "james", ".", "<br>", "<eos>"]
@@ -48,8 +48,8 @@ def test_add_vocab(test_corp):
     assert test_corp.vocab['hello_world_this_is_dummy'] == num
 
 def test_tokenize(test_corp):
-    assert test_corp.tokenize("<s>James</s> is.") == ["<bos>", "<s>", "james", "</s>", "is", ".", "<eos>"]
-    assert test_corp.tokenize("<s>James</s> is.", cleanup_tag=True) == ["<bos>", "james", "is", ".", "<eos>"]
+    assert test_corp.tokenize("<sj>James</sj> is.") == ["<bos>", "<sj>", "james", "</sj>", "is", ".", "<eos>"]
+    assert test_corp.tokenize("<sj>James</sj> is.", cleanup_tag=True) == ["<bos>", "james", "is", ".", "<eos>"]
     assert test_corp.tokenize("3 > 1", cleanup_tag=True) == ["<bos>", "3", ">", "1", "<eos>"]
 
 def test_encode(test_corp):
@@ -62,13 +62,13 @@ def test_data_at(test_corp):
     assert test_corp.ids_to_tokens(test_corp.data_at(0)) == ["<bos>", "james", "is", "a", "teacher", ".", "<br>", "<eos>"]
 
 def test_teacher_at(test_corp):
-    assert test_corp.ids_to_tokens(test_corp.teacher_at(0)) == ["<bos>", "<s>", "james", "</s>", "<v>", "is", "</v>", "a", "teacher", ".", "<br>", "<eos>"]
+    assert test_corp.ids_to_tokens(test_corp.teacher_at(0)) == ["<bos>", "<sj>", "james", "</sj>", "<v>", "is", "</v>", "a", "teacher", ".", "<br>", "<eos>"]
 
 def test_unknown_word(test_corp):
     assert test_corp.ids_to_tokens(test_corp.encode("isetan")) == ["<bos>", "<unk>", "<eos>"]
 
 def test_pos_tag(test_corp):
-    tokens = ["james", "</s>", "<v>", "is", "</v>", "teacher"]
+    tokens = ["james", "</sj>", "<v>", "is", "</v>", "teacher"]
     tags   = test_corp.pos_tag(tokens)
     assert tags == ["<POS:NN>", "<POS:META>", "<POS:META>", "<POS:NN>", "<POS:META>", "<POS:NN>"]
 
@@ -96,9 +96,9 @@ def test_minbatch_from_corpus(test_conf, test_corp):
     assert f(trains[0].data_batch_at(1)) == ["i",  "he"]
     assert f(trains[0].data_batch_at(2)) == ["am", "has"]
 
-    # <s>James</s> <v>is</v> a teacher.
+    # <sj>James</sj> <v>is</v> a teacher.
     # I haven't
-    assert f(tests[0].teach_batch_at(1)) == ["<s>",     "i"]
+    assert f(tests[0].teach_batch_at(1)) == ["<sj>",     "i"]
     assert f(tests[0].teach_batch_at(2)) == ["james",   "have"]
     assert f(tests[0].teach_batch_at(7)) == ["a",       "<pad>"]
     assert f(tests[0].teach_batch_at(8)) == ["teacher", "<pad>"]
