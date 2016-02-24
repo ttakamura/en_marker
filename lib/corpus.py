@@ -19,6 +19,9 @@ class DummyPosTagger:
         return [(token, "DUMMY") for token in tokens]
 
 # def open(path, tagger=PerceptronTagger()):
+def perceptron_tagger():
+    return PerceptronTagger()
+
 def open(path, tagger=DummyPosTagger()):
     c = EnMarkCorpus(path, tagger=tagger)
     c.open()

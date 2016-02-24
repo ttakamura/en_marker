@@ -3,7 +3,6 @@ import pytest
 import numpy as np
 import sys
 sys.path.append('lib')
-from nltk.tag.perceptron import PerceptronTagger
 
 import corpus
 from corpus import MinBatch
@@ -17,7 +16,7 @@ def pytest_funcarg__test_corp(request):
     return corpus.open(test_file, tagger=corpus.DummyPosTagger())
 
 def pytest_funcarg__pos_tag_corp(request):
-    return corpus.open(test_file, tagger=PerceptronTagger())
+    return corpus.open(test_file, tagger=corpus.perceptron_tagger())
 
 def pytest_funcarg__test_conf(request):
     args = "--mode train".split(" ")

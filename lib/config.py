@@ -103,7 +103,7 @@ class Config:
         self.args.lr         = new_args['lr']
 
     def open_corpus(self):
-        self.corpus = corpus.open(self.train_file())
+        self.corpus = corpus.open(self.train_file(), tagger=corpus.perceptron_tagger())
         self.corpus.minor_word_frequency = self.minor_word()
         return self.corpus
 
