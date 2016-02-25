@@ -65,7 +65,7 @@ def test_data_at(test_corp):
     assert test_corp.ids_to_tokens(test_corp.data_at(0)) == ["<bos>", "<POS:DUMMY>", "is", "a", "<POS:DUMMY>", ".", "<br>", "<eos>"]
 
 def test_teacher_at(test_corp):
-    assert test_corp.ids_to_tokens(test_corp.teacher_at(0)) == ["<bos>", "<sj>", "james", "</sj>", "<v>", "is", "</v>", "a", "teacher", ".", "<br>", "<eos>"]
+    assert test_corp.ids_to_tokens(test_corp.teacher_at(0)) == ["<bos>", "<sj>", "<POS:DUMMY>", "</sj>", "<v>", "is", "</v>", "a", "<POS:DUMMY>", ".", "<br>", "<eos>"]
 
 def test_unknown_word(test_corp):
     assert test_corp.ids_to_tokens(test_corp.encode("isetan")) == ["<bos>", "<unk>", "<eos>"]
@@ -77,12 +77,12 @@ def test_pos_tag(test_corp):
 
 def test_minbatch_randomized_from_corpus(test_conf, test_corp):
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(test_conf, test_corp, 2)
-    assert train_idxs.shape == (3, 2)
-    assert test_idxs.shape  == (1, 2)
+    assert train_idxs.shape == (4, 2)
+    assert test_idxs.shape  == (2, 2)
 
     train_idxs2, test_idxs2, _, _ = MinBatch.randomized_from_corpus(test_conf, test_corp, 2)
-    for i in test_idxs2.reshape(2):
-        for j in train_idxs.reshape(6):
+    for i in test_idxs2.reshape(4):
+        for j in train_idxs.reshape(8):
             assert i != j
 
 def test_minbatch_from_corpus(test_conf, test_corp):
@@ -100,9 +100,9 @@ def test_minbatch_from_corpus(test_conf, test_corp):
     # <sj>James</sj> <v>is</v> a teacher.
     # I haven't
     assert f(tests[0].teach_batch_at(1)) == ["<sj>",     "i"]
-    assert f(tests[0].teach_batch_at(2)) == ["james",   "have"]
+    assert f(tests[0].teach_batch_at(2)) == ["<POS:DUMMY>", "have"]
     assert f(tests[0].teach_batch_at(7)) == ["a",       "<pad>"]
-    assert f(tests[0].teach_batch_at(8)) == ["teacher", "<pad>"]
+    assert f(tests[0].teach_batch_at(8)) == ["<POS:DUMMY>", "<pad>"]
 
 def test_save_and_load(test_corp):
     test_corp.save("./tmp/test_corp.vocab")
@@ -110,8 +110,8 @@ def test_save_and_load(test_corp):
     assert test_corp == new_corp
 
 def test_bleu_score(test_corp):
-    candidate  = ['this', 'is', 'a', 'pen']
-    references = [['this', 'is', 'a', 'pen']]
+    candidate  = ['this', 'is', 'a', 'pen', '<pad>', '<pad>', '<pad>', '<pad>']
+    references = [['this', 'is', 'a', 'pen', '<pad>']]
     score = test_corp.bleu_score(candidate, references)
     assert score == 1.0
 

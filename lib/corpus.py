@@ -173,9 +173,9 @@ class Corpus(object):
         return re.match(meta_tag_regexp, token)
 
     def bleu_score(self, candidate, references):
-        weights = [0.5, 0.5]
-        # candidate  = [str(x) for x in candidate]
-        # references = [[str(x) for x in ref] for ref in references]
+        weights    = [0.5, 0.5]
+        candidate  = [c for c in candidate if c != '<pad>']
+        references = [[c for c in ref if c != '<pad>'] for ref in references]
         return bleu(references, candidate, weights)
 
 class EnMarkCorpus(Corpus):
