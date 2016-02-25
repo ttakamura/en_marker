@@ -159,7 +159,9 @@ class Corpus(object):
 
     # Y vector --------------------------------------------
     def teacher_at(self, index):
-        return [id for id in self.rows[index]]
+        return [self.convert_minor_word(id, word_idx, index)
+                for word_idx, id
+                in enumerate(self.rows[index])]
 
     def is_teacher_tag(self, id):
         return self.is_meta_tag_id(id) and not (id in self.train_allow_tag_ids)
