@@ -75,7 +75,7 @@ class EncoderDecoder(Chain):
   def __init__(self, conf, enclass=Encoder, declass=WordDecoder):
     super(EncoderDecoder, self).__init__(
         enc = enclass.build(conf),
-        dec = decoder.build(conf),
+        dec = declass.build(conf),
     )
     self.vocab_size = conf.vocab_size()
     self.conf = conf
