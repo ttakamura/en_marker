@@ -7,8 +7,14 @@ import chainer.functions as F
 import chainer.links as L
 
 import config
+import mark
 
+# -- Encoder -----------------------------------------------------------------------
 class Encoder(Chain):
+  @staticmethod
+  def build(conf):
+    return Encoder(conf.vocab_size(), conf.embed_size(), conf.hidden_size())
+
   def __init__(self, vocab_size, embed_size, hidden_size):
     super(Encoder, self).__init__(
         xe = L.EmbedID(vocab_size, embed_size),
@@ -21,9 +27,15 @@ class Encoder(Chain):
     c2, h2 = F.lstm(c, self.eh(e) + self.hh(h))
     return c2, h2
 
-class Decoder(Chain):
+# -- Decoder -----------------------------------------------------------------------
+# var-length decoder, output is a word-id (string)
+class WordDecoder(Chain):
+  @staticmethod
+  def build(conf):
+    return WordDecoder(conf.vocab_size(), conf.embed_size(), conf.hidden_size())
+
   def __init__(self, vocab_size, embed_size, hidden_size):
-    super(Decoder, self).__init__(
+    super(WordDecoder, self).__init__(
         ye = L.EmbedID(vocab_size, embed_size),
         eh = L.Linear(embed_size, 4 * hidden_size),
         hh = L.Linear(hidden_size, 4 * hidden_size),
@@ -34,15 +46,36 @@ class Decoder(Chain):
   def __call__(self, y, c, h):
     e      = F.tanh(self.ye(y))
     c2, h2 = F.lstm(c, self.eh(e) + self.hh(h))
-    f      = F.tanh(self.hf(h))
+    f      = F.tanh(self.hf(h2))
     y2     = self.fy(f)
     return y2, c2, h2
 
+# fix-length decoder, output is a marking vector [0, 1, 0, 0, 0]
+class MarkDecoder(Chain):
+  @staticmethod
+  def build(conf):
+    return MarkDecoder(conf.vocab_size(), conf.embed_size(), conf.hidden_size(), mark.mark_dim_size())
+
+  def __init__(self, vocab_size, embed_size, hidden_size, mark_size):
+    super(WordDecoder, self).__init__(
+        ye = L.EmbedID(vocab_size, embed_size),
+        eh = L.Linear(embed_size, 4 * hidden_size),
+        hh = L.Linear(hidden_size, 4 * hidden_size),
+        hf = L.Linear(hidden_size, mark_size)
+    )
+
+  def __call__(self, y, c, h):
+    e      = F.tanh(self.ye(y))
+    c2, h2 = F.lstm(c, self.eh(e) + self.hh(h))
+    f      = F.tanh(self.hf(h2))
+    return f, c2, h2
+
+# ----------------------------------------------------------------------------
 class EncoderDecoder(Chain):
-  def __init__(self, conf):
+  def __init__(self, conf, enclass=Encoder, declass=WordDecoder):
     super(EncoderDecoder, self).__init__(
-        enc = Encoder(conf.vocab_size(), conf.embed_size(), conf.hidden_size()),
-        dec = Decoder(conf.vocab_size(), conf.embed_size(), conf.hidden_size()),
+        enc = enclass.build(conf),
+        dec = decoder.build(conf),
     )
     self.vocab_size = conf.vocab_size()
     self.conf = conf
