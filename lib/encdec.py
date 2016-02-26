@@ -67,8 +67,8 @@ class MarkDecoder(Chain):
   def __call__(self, y, c, h):
     e      = F.tanh(self.ye(y))
     c2, h2 = F.lstm(c, self.eh(e) + self.hh(h))
-    f      = F.tanh(self.hf(h2))
-    return f, c2, h2
+    y2     = F.tanh(self.hf(h2))
+    return y2, c2, h2
 
 # ----------------------------------------------------------------------------
 class EncoderDecoder(Chain):
