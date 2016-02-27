@@ -12,9 +12,7 @@ import encdec
 from corpus import MinBatch
 
 def forward(batch, conf, encdec, is_training, generation_limit):
-  xp         = conf.xp()
   batch_size = batch.batch_size()
-  t          = batch.boundary_symbol_batch()
   hyp_batch  = [[] for _ in range(batch_size)]
   encdec.reset(batch_size)
 
@@ -22,6 +20,7 @@ def forward(batch, conf, encdec, is_training, generation_limit):
     x = batch.data_batch_at(seq_idx)
     encdec.encode(x)
 
+  t = batch.boundary_symbol_batch()
   if is_training:
     for seq_idx in range(batch.teach_seq_length()):
       y = encdec.decode(t)
