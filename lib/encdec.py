@@ -72,6 +72,18 @@ class MarkDecoder(Chain):
 
 # ----------------------------------------------------------------------------
 class EncoderDecoder(Chain):
+  @staticmethod
+  def build(conf):
+    enc = Encoder
+    if conf.model() == 'v1':
+      dec = WordDecoder
+    elif  conf.model() == 'v2':
+      dec = MarkDecoder
+    else:
+      print "Default model is used"
+      dec = WordDecoder # default
+    return EncoderDecoder(conf, enclass=enc, declass=dec)
+
   def __init__(self, conf, enclass=Encoder, declass=WordDecoder):
     super(EncoderDecoder, self).__init__(
         enc = enclass.build(conf),
