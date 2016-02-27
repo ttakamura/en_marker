@@ -5,6 +5,7 @@ import numpy
 from chainer import cuda, optimizers, optimizer, serializers
 
 import corpus
+import mark
 from argparse import ArgumentParser
 from encdec import EncoderDecoder
 
@@ -142,6 +143,9 @@ class Config:
 
     def vocab_size(self):
         return self.corpus.vocab_size()
+
+    def mark_dim_size(self):
+        return mark.mark_dim_size()
 
     def lr(self):
         return self.args.lr

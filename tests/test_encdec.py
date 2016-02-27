@@ -6,14 +6,75 @@ sys.path.append('lib')
 import config
 import corpus
 import runner
-from encdec import EncoderDecoder
+from corpus import MinBatch
+from encdec import EncoderDecoder, Encoder, WordDecoder, MarkDecoder
 
 test_file = "tests/test.html"
 
-def pytest_funcarg__encdec_s(request):
-    args = "--mode train --embed 50 --hidden 30 --minbatch 15".split(" ")
-    conf = config.parse_args(raw_args = args)
-    return EncoderDecoder(100, conf)
-
 def pytest_funcarg__test_corp(request):
     return corpus.open(test_file)
+
+def parse_conf(model, test_corp):
+    args = "--mode train --embed 50 --hidden 30 --minbatch 15".split(" ")
+    args += ["--model", model]
+    conf = config.parse_args(raw_args = args)
+    conf.corpus = test_corp
+    return conf
+
+def build_model(model, test_corp):
+    conf = parse_conf(model, test_corp)
+    encdec, opt = conf.setup_model()
+    return conf, encdec, opt
+
+def fix_data_train(conf, encdec, opt, batch):
+    x = batch.data_batch_at(0)
+    t = batch.teach_batch_at(0)
+    prev_loss = 100.0
+    for i in range(30):
+        encdec.reset(batch.batch_size())
+        encdec.encode(x)
+        y = encdec.decode(batch.boundary_symbol_batch())
+        encdec.add_loss(y, t)
+        encdec.loss.backward()
+        opt.update()
+        loss = float(encdec.loss.data)
+        assert loss < prev_loss
+        prev_loss = loss
+    return prev_loss
+
+# -------------------------------------------------------------
+def test_v1_model(test_corp):
+    conf, encdec, opt = build_model("v1", test_corp)
+    enc = encdec.enc
+    assert type(enc) == Encoder
+    assert enc.xe.W.data.shape == (conf.vocab_size(), 50)
+    assert enc.eh.W.data.shape == (120, 50)
+    assert enc.hh.W.data.shape == (120, 30)
+    dec = encdec.dec
+    assert type(dec) == WordDecoder
+    assert dec.ye.W.data.shape == (conf.vocab_size(), 50)
+    assert dec.eh.W.data.shape == (120, 50)
+    assert dec.hh.W.data.shape == (120, 30)
+    assert dec.hf.W.data.shape == (50,  30)
+    assert dec.fy.W.data.shape == (conf.vocab_size(), 50)
+
+def test_v2_model(test_corp):
+    conf, encdec, opt = build_model("v2", test_corp)
+    enc = encdec.enc
+    assert type(enc) == Encoder
+    assert enc.xe.W.data.shape == (conf.vocab_size(), 50)
+    assert enc.eh.W.data.shape == (120, 50)
+    assert enc.hh.W.data.shape == (120, 30)
+    dec = encdec.dec
+    assert type(dec) == MarkDecoder
+    assert dec.ye.W.data.shape == (conf.vocab_size(), 50)
+    assert dec.eh.W.data.shape == (120, 50)
+    assert dec.hh.W.data.shape == (120, 30)
+    assert dec.hf.W.data.shape == (conf.mark_dim_size(),  30)
+
+def test_v1_train(test_corp):
+    conf, encdec, opt = build_model("v1", test_corp)
+    batch_size = 2
+    train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, batch_size)
+    loss = fix_data_train(conf, encdec, opt, trains[0])
+    assert loss < 0.2

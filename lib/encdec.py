@@ -54,10 +54,10 @@ class WordDecoder(Chain):
 class MarkDecoder(Chain):
   @staticmethod
   def build(conf):
-    return MarkDecoder(conf.vocab_size(), conf.embed_size(), conf.hidden_size(), mark.mark_dim_size())
+    return MarkDecoder(conf.vocab_size(), conf.embed_size(), conf.hidden_size(), conf.mark_dim_size())
 
   def __init__(self, vocab_size, embed_size, hidden_size, mark_size):
-    super(WordDecoder, self).__init__(
+    super(MarkDecoder, self).__init__(
         ye = L.EmbedID(vocab_size, embed_size),
         eh = L.Linear(embed_size, 4 * hidden_size),
         hh = L.Linear(hidden_size, 4 * hidden_size),
