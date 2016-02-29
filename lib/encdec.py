@@ -162,7 +162,7 @@ class EncoderDecoder(Chain):
         break
     return result
 
-  def forward(self, conf, batch, is_training, generation_limit):
+  def forward(self, conf, batch, is_training, generation_limit=100):
     batch_size = batch.batch_size()
     hyp_batch  = [[] for _ in range(batch_size)]
     self.reset(batch_size)
