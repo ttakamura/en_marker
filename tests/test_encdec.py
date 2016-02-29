@@ -26,15 +26,10 @@ def build_model(model, test_corp):
     encdec, opt = conf.setup_model()
     return conf, encdec, opt
 
-def fix_data_train(conf, encdec, opt, batch):
-    x = batch.data_batch_at(0)
-    t = batch.teach_batch_at(0)
+def dummy_data_train(conf, encdec, opt, batch):
     prev_loss = 100.0
     for i in range(30):
-        encdec.reset(batch.batch_size())
-        encdec.encode(x)
-        y = encdec.decode(batch.boundary_symbol_batch())
-        encdec.add_loss(y, t)
+        hyp, loss = encdec.forward(conf, batch)
         encdec.loss.backward()
         opt.update()
         loss = float(encdec.loss.data)
@@ -76,5 +71,5 @@ def test_v1_train(test_corp):
     conf, encdec, opt = build_model("v1", test_corp)
     batch_size = 2
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, batch_size)
-    loss = fix_data_train(conf, encdec, opt, trains[0])
+    loss = dummy_data_train(conf, encdec, opt, trains[0])
     assert loss < 0.2
