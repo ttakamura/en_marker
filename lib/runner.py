@@ -9,7 +9,7 @@ import chainer.links as L
 
 import config
 import encdec
-from corpus import MinBatch
+from minbatch import MinBatch
 
 def forward(batch, conf, encdec, is_training, generation_limit):
   batch_size = batch.batch_size()

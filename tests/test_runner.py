@@ -5,7 +5,7 @@ sys.path.append('lib')
 
 import config
 import corpus
-from corpus import MinBatch
+from minbatch import MinBatch
 import runner
 from encdec import EncoderDecoder
 

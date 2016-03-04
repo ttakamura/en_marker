@@ -5,7 +5,7 @@ import sys
 sys.path.append('lib')
 
 import corpus
-from corpus import MinBatch
+from minbatch import MinBatch
 import config
 
 np.random.seed(123)

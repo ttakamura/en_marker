@@ -6,7 +6,7 @@ sys.path.append('lib')
 import config
 import corpus
 import runner
-from corpus import MinBatch
+from minbatch import MinBatch
 from encdec import EncoderDecoder, Encoder, WordDecoder, MarkDecoder
 
 test_file = "tests/test.html"
