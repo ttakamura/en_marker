@@ -6,6 +6,8 @@ sys.path.append('lib')
 
 import corpus
 from minbatch import MinBatch
+from minbatch import MarkTeacherMinBatch
+import mark
 import config
 
 np.random.seed(123)
@@ -129,3 +131,15 @@ def test_convert_minor_word(pos_tag_corp):
     assert james == "james"
     result = test_corp.convert_minor_word(test_corp.token_to_id("james"), idx, 0)
     assert test_corp.id_to_token(result) == "<POS:NNS>"
+
+def test_mark_teach_minbatch(test_conf, test_corp):
+    data_rows  = [ test_corp.tokens_to_ids([        "i",                 "am"        ]) ]
+    teach_rows = [ test_corp.tokens_to_ids(["<sj>", "i", "</sj>", "<v>", "am", "</v>"]) ]
+    batch = MarkTeacherMinBatch(test_conf, test_corp, data_rows, teach_rows)
+    f = lambda x: test_corp.ids_to_tokens(list(x))
+
+    assert f(batch.data_batch_at(0)) == ["i"]
+    assert f(batch.data_batch_at(1)) == ["am"]
+
+    assert batch.teach_batch_at(0) == []
+    assert batch.teach_batch_at(1) == []
