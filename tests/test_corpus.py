@@ -133,13 +133,14 @@ def test_convert_minor_word(pos_tag_corp):
     assert test_corp.id_to_token(result) == "<POS:NNS>"
 
 def test_mark_teach_minbatch(test_conf, test_corp):
-    data_rows  = [ test_corp.tokens_to_ids([        "i",                 "am"        ]) ]
-    teach_rows = [ test_corp.tokens_to_ids(["<sj>", "i", "</sj>", "<v>", "am", "</v>"]) ]
+    data_rows  = [test_corp.tokens_to_ids([        "i",                 "am"        ]), test_corp.tokens_to_ids([        "i"         ])]
+    teach_rows = [test_corp.tokens_to_ids(["<sj>", "i", "</sj>", "<v>", "am", "</v>"]), test_corp.tokens_to_ids(["<sj>", "i", "</sj>"])]
     batch = MarkTeacherMinBatch(test_conf, test_corp, data_rows, teach_rows)
     f = lambda x: test_corp.ids_to_tokens(list(x))
 
-    assert f(batch.data_batch_at(0)) == ["i"]
-    assert f(batch.data_batch_at(1)) == ["am"]
-
-    assert batch.teach_batch_at(0) == []
-    assert batch.teach_batch_at(1) == []
+    assert f(batch.data_batch_at(0)) == ["i",  "i"]
+    assert f(batch.data_batch_at(1)) == ["am", "<pad>"]
+    assert (batch.teach_batch_at(0)[0] == mark.convert_types_to_vec(['<sj>'])).all()
+    assert (batch.teach_batch_at(0)[1] == mark.convert_types_to_vec(['<sj>'])).all()
+    assert (batch.teach_batch_at(1)[0] == mark.convert_types_to_vec(['<v>'])).all()
+    assert (batch.teach_batch_at(1)[1] == mark.convert_types_to_vec([])).all()

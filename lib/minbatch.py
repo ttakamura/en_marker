@@ -96,4 +96,6 @@ class MinBatch:
 class MarkTeacherMinBatch(MinBatch):
     def convert_teach_id_rows(self, id_rows):
         mark_rows = [mark.convert_teach_id_row(row, self.corpus) for row in id_rows]
+        # print self.corpus.ids_to_tokens(id_rows[0])
+        # print mark_rows[0]
         return self.fill_pad(mark_rows, mark.padding())

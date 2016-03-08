@@ -35,7 +35,7 @@ def convert_teach_id_row(row, corpus):
         else:
             types = [type for type, flag in context.items() if flag]
             mark_vecs.append(convert_types_to_vec(types))
-    return np.array(mark_vecs, dtype=np.float32)
+    return mark_vecs
 
 def convert_types_to_vec(type_tokens):
     vec = np.zeros(mark_dim_size(), dtype=np.float32)
