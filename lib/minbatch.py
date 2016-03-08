@@ -95,5 +95,5 @@ class MinBatch:
 # teacher = [ mark-vector ... ]
 class MarkTeacherMinBatch(MinBatch):
     def convert_teach_id_rows(self, id_rows):
-        mark_rows = [mark.convert_teach_id_row(row) for row in id_rows]
+        mark_rows = [mark.convert_teach_id_row(row, self.corpus) for row in id_rows]
         return self.fill_pad(mark_rows, mark.padding())
