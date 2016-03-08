@@ -12,7 +12,8 @@ def mark_dim_size():
 def idx_to_type(idx):
     return mark_map[idx]
 
-class WordMark:
-    def __init__(self, raw_args):
-        self.args = self.parse_args(raw_args)
-        self.corpus = None
+def convert_teach_id_row(row):
+    return []
+
+def padding():
+    return [[0]]

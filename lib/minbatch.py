@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 import codecs
 import numpy as np
 
+import mark
+
 class MinBatch:
     @staticmethod
     def randomized_from_corpus(conf, corpus, batch_size):
@@ -35,11 +37,11 @@ class MinBatch:
     def __init__(self, conf, corpus, data_id_rows, teach_id_rows=None):
         self.conf      = conf
         self.corpus    = corpus
-        self.data_rows = self.fill_pad(data_id_rows)
+        self.data_rows = self.fill_pad(data_id_rows, self.corpus.token_to_id("<pad>"))
         if teach_id_rows == None:
             self.teach_rows = None
         else:
-            self.teach_rows = self.fill_pad(teach_id_rows)
+            self.teach_rows = self.convert_teach_id_rows(teach_id_rows)
 
     def __eq__(self, other):
         return (self.data_rows  == other.data_rows) and \
@@ -49,14 +51,16 @@ class MinBatch:
     def __ne__(self, other):
         return not self == other
 
-    def fill_pad(self, id_rows):
-        pad_id     = self.corpus.token_to_id("<pad>")
+    def convert_teach_id_rows(self, id_rows):
+        return self.fill_pad(id_rows, self.corpus.token_to_id("<pad>"))
+
+    def fill_pad(self, id_rows, padding):
         max_length = max([ len(row) for row in id_rows ])
         for row in id_rows:
             if max_length > len(row):
                 pad_size = (max_length - len(row))
                 for _ in range(pad_size):
-                    row.append(pad_id)
+                    row.append(padding)
         return id_rows
 
     def boundary_symbol_batch(self):
@@ -87,3 +91,9 @@ class MinBatch:
 
     def teach_seq_length(self):
         return len(self.teach_rows[0])
+
+# teacher = [ mark-vector ... ]
+class MarkTeacherMinBatch(MinBatch):
+    def convert_teach_id_rows(self, id_rows):
+        mark_rows = [mark.convert_teach_id_row(row) for row in id_rows]
+        return self.fill_pad(mark_rows, mark.padding())
