@@ -9,7 +9,6 @@ import chainer.links as L
 
 import config
 import encdec
-from minbatch import MinBatch
 
 def forward(batch, conf, encdec, is_training, generation_limit):
   batch_size = batch.batch_size()
@@ -53,7 +52,7 @@ def train(conf):
     trained = 0
     train_blue_scores = []
     test_blue_scores  = []
-    train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, conf.batch_size())
+    train_idxs, test_idxs, trains, tests = encdec.minbatch_class.randomized_from_corpus(conf, conf.corpus, conf.batch_size())
 
     for batch in trains:
       hyp_batch, loss = forward(batch, conf, encdec, True, 0)
@@ -77,7 +76,7 @@ def train(conf):
   return epoch_train_blue_scores, epoch_test_blue_scores
 
 def predict(conf, encdec, source):
-  batch = MinBatch.from_text(conf, conf.corpus, source)
+  batch = encdec.minbatch_class.from_text(conf, conf.corpus, source)
   print ' '.join(conf.corpus.ids_to_tokens(batch.data_at(0)))
   hyp   = forward(batch, conf, encdec, False, 30)
   print ' '.join(hyp[0])

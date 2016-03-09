@@ -8,6 +8,7 @@ import chainer.links as L
 
 import config
 import mark
+from minbatch import MinBatch, MarkTeacherMinBatch
 
 # -- Encoder -----------------------------------------------------------------------
 class Encoder(Chain):
@@ -110,21 +111,25 @@ class EncoderDecoder(Chain):
   def build(conf):
     enc = Encoder
     if conf.model() == 'v1':
-      dec = WordDecoder
+      dec   = WordDecoder
+      batch = MinBatch
     elif  conf.model() == 'v2':
-      dec = MarkDecoder
+      dec   = MarkDecoder
+      batch = MarkTeacherMinBatch
     else:
       print "Default model is used"
-      dec = WordDecoder # default
-    return EncoderDecoder(conf, enclass=enc, declass=dec)
+      dec   = WordDecoder # default
+      batch = MinBatch
+    return EncoderDecoder(conf, enclass=enc, declass=dec, minbatch_class=batch)
 
-  def __init__(self, conf, enclass=Encoder, declass=WordDecoder):
+  def __init__(self, conf, enclass=Encoder, declass=WordDecoder, minbatch_class=MinBatch):
     super(EncoderDecoder, self).__init__(
         enc = enclass.build(conf),
         dec = declass.build(conf),
     )
     self.vocab_size = conf.vocab_size()
     self.conf = conf
+    self.minbatch_class = minbatch_class
 
   def reset(self, batch_size):
     xp = self.conf.xp()
