@@ -152,7 +152,15 @@ class EncoderDecoder(Chain):
   def add_loss(self, y, t):
     if type(t) != Variable:
       t = Variable(t)
-    self.loss += F.softmax_cross_entropy(y, t)
+
+    #print self.minbatch_class
+    #print y.data
+    #print t.data
+
+    if t.data.ndim == 1:
+      self.loss += F.softmax_cross_entropy(y, t)
+    else:
+      self.loss += -F.sum(F.log(F.softmax(y)) * t)
 
   def encode_seq(self, batch):
     for seq_idx in reversed(range(batch.data_seq_length())):
@@ -162,8 +170,9 @@ class EncoderDecoder(Chain):
   def decode_seq_train(self, conf, batch):
     result = []
     for seq_idx in range(batch.teach_seq_length()):
-      t     = self.dec.train_input_batch_at(seq_idx, batch)
-      y     = self.decode(t)
+      x     = self.dec.train_input_batch_at(seq_idx, batch)
+      y     = self.decode(x)
+      t     = batch.teach_batch_at(seq_idx)
       y_str = self.dec.decoded_vec_to_str(y, conf, batch.batch_size())
       result.append((t, y, y_str))
     return result
@@ -172,26 +181,36 @@ class EncoderDecoder(Chain):
     result = []
     y      = None
     while len(result) < generation_limit:
-      t     = self.dec.predict_input_batch_at(seq_idx, y, batch)
-      y     = self.decode(t)
+      x     = self.dec.predict_input_batch_at(seq_idx, y, batch)
+      y     = self.decode(x)
       y_str = self.dec.decoded_vec_to_str(y, conf, batch.batch_size())
-      result.append((t, y, y_str))
+      result.append((y, y_str))
       if all(y_str[k] == '<eos>' for k in range(batch_size)):
         break
     return result
 
   def forward(self, conf, batch, is_training, generation_limit=100):
     batch_size = batch.batch_size()
-    hyp_batch  = [[] for _ in range(batch_size)]
+    ys     = [[] for _ in range(batch_size)]
+    ts     = [[] for _ in range(batch_size)]
+    y_strs = [[] for _ in range(batch_size)]
+
     self.reset(batch_size)
     self.encode_seq(batch)
+
     if is_training:
       for t, y, y_str in self.decode_seq_train(conf, batch):
         self.add_loss(y, t)
         for k in range(batch_size):
-          hyp_batch[k].append(y_str[k])
+          ys[k].append( y.data[k] )
+          ts[k].append( t.data[k] )
+          y_strs[k].append( y_str[k] )
     else:
-      for t, y, y_str in self.decode_seq_predict(conf, batch, generation_limit):
+      for y, y_str in self.decode_seq_predict(conf, batch, generation_limit):
         for k in range(batch_size):
-          hyp_batch[k].append(y_str[k])
+          ys[k].append( y.data[k] )
+          ts[k].append( None )
+          y_strs[k].append( y_str[k] )
+
+    hyp_batch = [(ts, ys, y_strs) for _ in range(batch_size)]
     return hyp_batch, self.loss

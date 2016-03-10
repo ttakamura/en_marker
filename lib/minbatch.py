@@ -5,34 +5,33 @@ import numpy as np
 import mark
 
 class MinBatch:
-    @staticmethod
-    def randomized_from_corpus(conf, corpus, batch_size):
+    @classmethod
+    def randomized_from_corpus(cls, conf, corpus, batch_size):
         train_size  = int(corpus.size() / 3 * 2) / batch_size
         test_size   = int(corpus.size() / 3 * 1) / batch_size
         test_offset = train_size * batch_size
         train_idxs  = np.random.permutation(train_size * batch_size).reshape(train_size, batch_size)
         test_idxs   = np.random.permutation(test_size  * batch_size).reshape(test_size,  batch_size) + test_offset
-        trains      = MinBatch.from_corpus(conf, corpus, train_idxs)
-        tests       = MinBatch.from_corpus(conf, corpus, test_idxs)
+        trains      = cls.from_corpus(conf, corpus, train_idxs)
+        tests       = cls.from_corpus(conf, corpus, test_idxs)
         return train_idxs, test_idxs, trains, tests
 
-    @staticmethod
-    def from_corpus(conf, corpus, idxs_list):
+    @classmethod
+    def from_corpus(cls, conf, corpus, idxs_list):
         batches = []
         for idxs in idxs_list:
             data_id_rows  = [corpus.data_at(i) for i in idxs]
             teach_id_rows = [corpus.teacher_at(i) for i in idxs]
-            batch = MinBatch(conf, corpus, data_id_rows, teach_id_rows)
+            batch = cls(conf, corpus, data_id_rows, teach_id_rows)
             batches.append(batch)
         return batches
 
-    @staticmethod
-    def from_text(conf, corpus, source):
+    @classmethod
+    def from_text(cls, conf, corpus, source):
         if not isinstance(source, list):
-            # ["hello world"]
             source = [source]
         source = [corpus.encode(s) for s in source]
-        return MinBatch(conf, corpus, source)
+        return cls(conf, corpus, source)
 
     def __init__(self, conf, corpus, data_id_rows, teach_id_rows=None):
         self.conf      = conf
@@ -42,6 +41,7 @@ class MinBatch:
             self.teach_rows = None
         else:
             self.teach_rows = self.convert_teach_id_rows(teach_id_rows)
+        self.teach_dtype = np.int32
 
     def __eq__(self, other):
         return (self.data_rows  == other.data_rows) and \
@@ -80,7 +80,7 @@ class MinBatch:
 
     def teach_batch_at(self, seq_idx):
         xp = self.conf.xp()
-        x  = xp.array([self.teach_rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.int32)
+        x  = xp.array([self.teach_rows[k][seq_idx] for k in range(self.batch_size())], dtype=self.teach_dtype)
         return x
 
     def batch_size(self):
@@ -94,8 +94,14 @@ class MinBatch:
 
 # teacher = [ mark-vector ... ]
 class MarkTeacherMinBatch(MinBatch):
+    def __init__(self, conf, corpus, data_id_rows, teach_id_rows=None):
+        MinBatch.__init__(self, conf, corpus, data_id_rows)
+        if teach_id_rows == None:
+            self.teach_rows = None
+        else:
+            self.teach_rows = self.convert_teach_id_rows(teach_id_rows)
+        self.teach_dtype = np.float32
+
     def convert_teach_id_rows(self, id_rows):
-        mark_rows = [mark.convert_teach_id_row(row, self.corpus) for row in id_rows]
-        # print self.corpus.ids_to_tokens(id_rows[0])
-        # print mark_rows[0]
-        return self.fill_pad(mark_rows, mark.padding())
+        rows = [mark.convert_teach_id_row(row, self.corpus) for row in id_rows]
+        return self.fill_pad(rows, mark.padding())
