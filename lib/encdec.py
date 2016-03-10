@@ -96,7 +96,10 @@ class MarkDecoder(Chain):
     return batch.data_batch_at(seq_idx)
 
   def predict_input_batch_at(self, seq_idx, y, batch):
-    return batch.data_batch_at(seq_idx)
+    if seq_idx < batch.data_seq_length():
+      return batch.data_batch_at(seq_idx)
+    else:
+      return None
 
   def decoded_vec_to_str(self, y, conf, batch_size):
     result = []
@@ -172,21 +175,26 @@ class EncoderDecoder(Chain):
     for seq_idx in range(batch.teach_seq_length()):
       x     = self.dec.train_input_batch_at(seq_idx, batch)
       y     = self.decode(x)
-      t     = batch.teach_batch_at(seq_idx)
+      t     = Variable(batch.teach_batch_at(seq_idx))
       y_str = self.dec.decoded_vec_to_str(y, conf, batch.batch_size())
       result.append((t, y, y_str))
     return result
 
   def decode_seq_predict(self, conf, batch, generation_limit):
-    result = []
-    y      = None
+    batch_size = batch.batch_size()
+    result  = []
+    y       = None
+    seq_idx = 0
     while len(result) < generation_limit:
-      x     = self.dec.predict_input_batch_at(seq_idx, y, batch)
-      y     = self.decode(x)
-      y_str = self.dec.decoded_vec_to_str(y, conf, batch.batch_size())
+      x = self.dec.predict_input_batch_at(seq_idx, y, batch)
+      if x == None:
+        break
+      y = self.decode(x)
+      y_str = self.dec.decoded_vec_to_str(y, conf, batch_size)
       result.append((y, y_str))
       if all(y_str[k] == '<eos>' for k in range(batch_size)):
         break
+      seq_idx += 1
     return result
 
   def forward(self, conf, batch, is_training, generation_limit=100):
@@ -201,7 +209,6 @@ class EncoderDecoder(Chain):
     if is_training:
       for t, y, y_str in self.decode_seq_train(conf, batch):
         self.add_loss(y, t)
-        print t.data
         for k in range(batch_size):
           ys[k].append( y.data[k] )
           ts[k].append( t.data[k] )
@@ -213,5 +220,5 @@ class EncoderDecoder(Chain):
           ts[k].append( None )
           y_strs[k].append( y_str[k] )
 
-    hyp_batch = [(ts, ys, y_strs) for _ in range(batch_size)]
+    hyp_batch = [(np.array(ts[k]), np.array(ys[k]), y_strs[k]) for k in range(batch_size)]
     return hyp_batch, self.loss
