@@ -201,6 +201,7 @@ class EncoderDecoder(Chain):
     if is_training:
       for t, y, y_str in self.decode_seq_train(conf, batch):
         self.add_loss(y, t)
+        print t.data
         for k in range(batch_size):
           ys[k].append( y.data[k] )
           ts[k].append( t.data[k] )
