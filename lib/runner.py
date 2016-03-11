@@ -71,10 +71,16 @@ def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
   scores = []
   for k in range(batch.batch_size()):
     if conf.model() == "v2":
+      data_tokens = corpus.ids_to_tokens(batch.data_at(k))
       t, y, hyp_tokens = hyp_batch[k]
       if t[0] != None:
         score = np.sum(y * t) / np.sum(t)
         scores.append(score)
+      logging(header)
+      logging('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained))
+      logging('  source  = ' + ' '.join(data_tokens))
+      # logging('  teacher = ' + ' '.join())
+      logging('  predict = ' + ' '.join(hyp_tokens))
     else:
       data_tokens  = corpus.ids_to_tokens(batch.data_at(k))
       teach_tokens = corpus.ids_to_tokens(batch.teach_at(k))
