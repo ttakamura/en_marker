@@ -143,4 +143,4 @@ def test_mark_teach_minbatch(test_conf, test_corp):
     assert (batch.teach_batch_at(0)[0] == mark.convert_types_to_vec(['<sj>'])).all()
     assert (batch.teach_batch_at(0)[1] == mark.convert_types_to_vec(['<sj>'])).all()
     assert (batch.teach_batch_at(1)[0] == mark.convert_types_to_vec(['<v>'])).all()
-    assert (batch.teach_batch_at(1)[1] == mark.convert_types_to_vec(['<->'])).all()
+    assert (batch.teach_batch_at(1)[1] == np.zeros(mark.mark_dim_size(), dtype=np.float32)).all()
