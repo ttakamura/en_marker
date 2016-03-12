@@ -37,7 +37,7 @@ def test_forward_v1(test_conf_v1):
     train_idxs, test_idxs, trains, tests = encdec.minbatch_class.randomized_from_corpus(conf, conf.corpus, 2)
     src_batch = trains[0]
     results, loss = runner.forward(src_batch, conf, encdec, True, 100)
-    assert loss.data < 1000.0
+    assert loss.data < 100.0
 
 def test_train_v1(test_conf_v1):
     conf = test_conf_v1
@@ -58,7 +58,7 @@ def test_forward_v2(test_conf_v2):
     train_idxs, test_idxs, trains, tests = encdec.minbatch_class.randomized_from_corpus(conf, conf.corpus, 2)
     src_batch = trains[0]
     results, loss = runner.forward(src_batch, conf, encdec, True, 100)
-    assert loss.data > 0.0
+    assert loss.data < 100.0
 
 def test_train_v2(test_conf_v2):
     conf = test_conf_v2
