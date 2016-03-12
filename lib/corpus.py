@@ -159,7 +159,8 @@ class Corpus(object):
 
     # Y vector --------------------------------------------
     def teacher_at(self, index):
-        return [self.convert_minor_word(id, word_idx, index)
+        #return [self.convert_minor_word(id, word_idx, index)
+        return [id
                 for word_idx, id
                 in enumerate(self.rows[index])]
 

@@ -22,6 +22,9 @@ class MinBatch:
         for idxs in idxs_list:
             data_id_rows  = [corpus.data_at(i) for i in idxs]
             teach_id_rows = [corpus.teacher_at(i) for i in idxs]
+            # for k in range(len(data_id_rows)):
+            #     print corpus.ids_to_tokens(data_id_rows[k])
+            #     print corpus.ids_to_tokens(teach_id_rows[k])
             batch = cls(conf, corpus, data_id_rows, teach_id_rows)
             batches.append(batch)
         return batches

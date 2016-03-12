@@ -3,7 +3,7 @@ import re
 import numpy as np
 
 mark_types = [
-    '<unk>' , # no anotation
+    '<->'   , # no anotation
     '<sj>'  , # subject
     '<v>'   , # verb
     '<not>' , # negative form
@@ -34,13 +34,17 @@ def convert_teach_id_row(row, corpus):
                 context[mark_types[close_type_to_idx_map[token]]] = False
         else:
             types = [type for type, flag in context.items() if flag]
-            mark_vecs.append(convert_types_to_vec(types))
+            vec   = convert_types_to_vec(types)
+            # print (token, [x for x, flag in context.items() if flag], vec)
+            mark_vecs.append(vec)
     return mark_vecs
 
 def convert_types_to_vec(type_tokens):
     vec = np.zeros(mark_dim_size(), dtype=np.float32)
     for type in type_tokens:
         vec[open_type_to_idx_map[type]] = 1.0
+    if np.sum(vec) == 0.0:
+        vec[open_type_to_idx_map['<->']] = 1.0
     return vec
 
 def padding():

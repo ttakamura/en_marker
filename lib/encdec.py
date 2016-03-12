@@ -203,6 +203,10 @@ class EncoderDecoder(Chain):
     ts     = [[] for _ in range(batch_size)]
     y_strs = [[] for _ in range(batch_size)]
 
+    # for seq_idx in range(batch.data_seq_length()):
+    #   print [conf.corpus.id_to_token(id) for id in batch.data_batch_at(seq_idx)]
+    #   print batch.teach_batch_at(seq_idx)
+
     self.reset(batch_size)
     self.encode_seq(batch)
 
