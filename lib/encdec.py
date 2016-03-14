@@ -105,7 +105,7 @@ class MarkDecoder(Chain):
     result = []
     output = cuda.to_cpu(y.data.argmax(1))
     for k in range(batch_size):
-      result.append(mark.idx_to_type(k))
+      result.append(mark.idx_to_type(output[k]))
     return result
 
 # ----------------------------------------------------------------------------
@@ -185,13 +185,14 @@ class EncoderDecoder(Chain):
     result  = []
     y       = None
     seq_idx = 0
-    while len(result) < generation_limit:
+    while seq_idx < generation_limit:
       x = self.dec.predict_input_batch_at(seq_idx, y, batch)
       if x == None:
         break
       y = self.decode(x)
       y_str = self.dec.decoded_vec_to_str(y, conf, batch_size)
-      result.append((y, y_str))
+      t = batch.teach_batch_at(seq_idx)
+      result.append((t, y, y_str))
       if all(y_str[k] == '<eos>' for k in range(batch_size)):
         break
       seq_idx += 1
@@ -202,10 +203,6 @@ class EncoderDecoder(Chain):
     ys     = [[] for _ in range(batch_size)]
     ts     = [[] for _ in range(batch_size)]
     y_strs = [[] for _ in range(batch_size)]
-
-    # for seq_idx in range(batch.data_seq_length()):
-    #   print [conf.corpus.id_to_token(id) for id in batch.data_batch_at(seq_idx)]
-    #   print batch.teach_batch_at(seq_idx)
 
     self.reset(batch_size)
     self.encode_seq(batch)
@@ -218,10 +215,10 @@ class EncoderDecoder(Chain):
           ts[k].append( t.data[k] )
           y_strs[k].append( y_str[k] )
     else:
-      for y, y_str in self.decode_seq_predict(conf, batch, generation_limit):
+      for t, y, y_str in self.decode_seq_predict(conf, batch, generation_limit):
         for k in range(batch_size):
           ys[k].append( y.data[k] )
-          ts[k].append( None )
+          ts[k].append( t[k] )
           y_strs[k].append( y_str[k] )
 
     hyp_batch = [(np.array(ts[k]), np.array(ys[k]), y_strs[k]) for k in range(batch_size)]

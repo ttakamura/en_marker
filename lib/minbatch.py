@@ -79,7 +79,10 @@ class MinBatch:
         return x
 
     def teach_at(self, idx):
-        return self.teach_rows[idx]
+        if self.teach_rows == None:
+            return None
+        else:
+            return self.teach_rows[idx]
 
     def teach_batch_at(self, seq_idx):
         xp = self.conf.xp()
