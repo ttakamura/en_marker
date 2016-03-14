@@ -35,7 +35,6 @@ def convert_teach_id_row(row, corpus):
         else:
             types = [type for type, flag in context.items() if flag]
             vec   = convert_types_to_vec(types)
-            # print (token, [x for x, flag in context.items() if flag], vec)
             mark_vecs.append(vec)
     return mark_vecs
 
@@ -49,3 +48,18 @@ def convert_types_to_vec(type_tokens):
 
 def padding():
     return np.zeros(mark_dim_size(), dtype=np.float32)
+
+def decoded_vec_score(t, y):
+    # <-> is not count to the score
+    masked_t = np.copy(t)
+    masked_t[open_type_to_idx_map['<->']] = 0.0
+    y_max = y.argmax(1)
+    t_max = t.argmax(1)
+    return np.sum(y_max == t_max) / np.sum(t_max == t_max)
+
+def decoded_vec_to_str(y):
+    result = []
+    output = cuda.to_cpu(y.data.argmax(1))
+    for k in range(len(output)):
+        result.append(idx_to_type(output[k]))
+    return result

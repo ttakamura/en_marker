@@ -49,19 +49,6 @@ class MarkDecoder(Chain):
     y2     = F.tanh(self.hf(h2))
     return y2, c2, h2
 
-  def predict_input_batch_at(self, seq_idx, y, batch):
-    if seq_idx < batch.data_seq_length():
-      return batch.data_batch_at(seq_idx)
-    else:
-      return None
-
-  def decoded_vec_to_str(self, y, conf, batch_size):
-    result = []
-    output = cuda.to_cpu(y.data.argmax(1))
-    for k in range(batch_size):
-      result.append(mark.idx_to_type(output[k]))
-    return result
-
 # ----------------------------------------------------------------------------
 class EncoderDecoder(Chain):
   @staticmethod

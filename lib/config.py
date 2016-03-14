@@ -44,6 +44,7 @@ class Config:
         default_epoch     = 10
         default_minbatch  = 64
         default_lr        = 0.01
+        default_clip      = 5
         p = ArgumentParser(description='English marker')
         p.add_argument('--mode',       default='console',        help='console, train or test')
         p.add_argument('--model',      default='v2',             help='v2')
@@ -53,6 +54,7 @@ class Config:
         p.add_argument('--epoch',      default=default_epoch,    type=int)
         p.add_argument('--minbatch',   default=default_minbatch, type=int)
         p.add_argument('--lr',         default=default_lr,       type=float)
+        p.add_argument('--gradclip',   default=default_clip,     type=int)
         p.add_argument('--train_file', default='data/original.html')
         p.add_argument('--load_prefix', default='model/sample',  help='load from the model')
         p.add_argument('--minor_word', default=1,                type=int, help='minimum frequency of minor-word')
@@ -150,6 +152,9 @@ class Config:
     def lr(self):
         return self.args.lr
 
+    def gradclip(self):
+        return self.args.gradclip
+
     def train_file(self):
         return self.args.train_file
 
@@ -166,7 +171,7 @@ class Config:
         encdec = self.encdec()
         opt    = self.optimizer()
         opt.setup(encdec)
-        opt.add_hook(optimizer.GradientClipping(5))
+        opt.add_hook(optimizer.GradientClipping(self.gradclip()))
         if self.use_gpu():
             encdec.to_gpu()
         return encdec, opt
