@@ -46,7 +46,7 @@ class Config:
         default_lr        = 0.01
         p = ArgumentParser(description='English marker')
         p.add_argument('--mode',       default='console',        help='console, train or test')
-        p.add_argument('--model',      default='v1',             help='v1 or v2')
+        p.add_argument('--model',      default='v2',             help='v2')
         p.add_argument('--gpu',        default=-1)
         p.add_argument('--embed',      default=default_embed,    type=int)
         p.add_argument('--hidden',     default=default_hidden,   type=int)

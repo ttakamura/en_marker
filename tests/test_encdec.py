@@ -7,7 +7,7 @@ import config
 import corpus
 import runner
 from minbatch import MinBatch
-from encdec import EncoderDecoder, Encoder, WordDecoder, MarkDecoder
+from encdec import EncoderDecoder, Encoder, MarkDecoder
 
 test_file = "tests/test.html"
 
@@ -39,21 +39,6 @@ def dummy_data_train(conf, encdec, opt, batch):
     return prev_loss
 
 # -------------------------------------------------------------
-def test_v1_model(test_corp):
-    conf, encdec, opt = build_model("v1", test_corp)
-    enc = encdec.enc
-    assert type(enc) == Encoder
-    assert enc.xe.W.data.shape == (conf.vocab_size(), 50)
-    assert enc.eh.W.data.shape == (120, 50)
-    assert enc.hh.W.data.shape == (120, 30)
-    dec = encdec.dec
-    assert type(dec) == WordDecoder
-    assert dec.ye.W.data.shape == (conf.vocab_size(), 50)
-    assert dec.eh.W.data.shape == (120, 50)
-    assert dec.hh.W.data.shape == (120, 30)
-    assert dec.hf.W.data.shape == (50,  30)
-    assert dec.fy.W.data.shape == (conf.vocab_size(), 50)
-
 def test_v2_model(test_corp):
     conf, encdec, opt = build_model("v2", test_corp)
     enc = encdec.enc
@@ -68,8 +53,8 @@ def test_v2_model(test_corp):
     assert dec.hh.W.data.shape == (120, 30)
     assert dec.hf.W.data.shape == (conf.mark_dim_size(),  30)
 
-def test_v1_train(test_corp):
-    conf, encdec, opt = build_model("v1", test_corp)
+def test_v2_train(test_corp):
+    conf, encdec, opt = build_model("v2", test_corp)
     batch_size = 2
     train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, batch_size)
     loss = dummy_data_train(conf, encdec, opt, trains[0])
