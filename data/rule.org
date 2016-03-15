@@ -15,3 +15,6 @@
 
    This is the book which is selling well now.
    <sj>This</sj> <v>is</v> the book <ss><rel><sj>which</sj></rel> <v>is</v> <cp>selling</cp> well now.</ss>
+
+* 省略を展開
+  It's => It is
