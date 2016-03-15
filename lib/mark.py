@@ -59,7 +59,7 @@ def decoded_vec_score(t, y):
 
 def decoded_vec_to_str(y):
     result = []
-    output = cuda.to_cpu(y.data.argmax(1))
+    output = y.argmax(1)
     for k in range(len(output)):
         result.append(idx_to_type(output[k]))
     return result

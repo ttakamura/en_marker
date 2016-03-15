@@ -10,6 +10,7 @@ import chainer.links as L
 import config
 import encdec
 from minbatch import MarkTeacherMinBatch
+import mark
 
 def forward(batch, conf, encdec, is_training, generation_limit):
   hyp_batch, loss = encdec.forward(conf, batch, is_training, generation_limit)
@@ -76,9 +77,10 @@ def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, loss, header):
     logging('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained))
     logging('  source  = ' + ' '.join(data_tokens))
     logging('  predict = ' + ' '.join(mark.decoded_vec_to_str(y)))
-    if t[0] != None:
+    if t.dtype == np.float32:
       scores.append(mark.decoded_vec_score(t, y))
       logging('  teacher = ' + ' '.join(mark.decoded_vec_to_str(t)))
+    if type(loss) == Variable:
       logging('  loss %.3f' % (loss.data))
   return scores
 

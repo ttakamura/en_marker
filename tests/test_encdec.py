@@ -6,7 +6,7 @@ sys.path.append('lib')
 import config
 import corpus
 import runner
-from minbatch import MinBatch
+from minbatch import MinBatch, MarkTeacherMinBatch
 from encdec import EncoderDecoder, Encoder, MarkDecoder
 
 test_file = "tests/test.html"
@@ -56,6 +56,6 @@ def test_v2_model(test_corp):
 def test_v2_train(test_corp):
     conf, encdec, opt = build_model("v2", test_corp)
     batch_size = 2
-    train_idxs, test_idxs, trains, tests = MinBatch.randomized_from_corpus(conf, conf.corpus, batch_size)
+    train_idxs, test_idxs, trains, tests = MarkTeacherMinBatch.randomized_from_corpus(conf, conf.corpus, batch_size)
     loss = dummy_data_train(conf, encdec, opt, trains[0])
-    assert loss < 3.0
+    assert loss < 30.0

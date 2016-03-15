@@ -15,7 +15,7 @@ def pytest_funcarg__test_corp(request):
 def pytest_funcarg__config_a(request, test_corp):
     conf = config.parse_args(raw_args = [
         '--mode',       'train',
-        '--model',      'test_encdec',
+        '--model',      'v2',
         '--embed',      '128',
         '--hidden',     '64',
         '--minbatch',   '33',

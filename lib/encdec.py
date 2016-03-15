@@ -54,11 +54,11 @@ class EncoderDecoder(Chain):
   @staticmethod
   def build(conf):
     enc = Encoder
-    if  conf.model() == 'v2':
+    if conf.model() == 'v2':
       dec   = MarkDecoder
       batch = MarkTeacherMinBatch
     else:
-      error conf.model()
+      raise Exception("unknown config.model")
     return EncoderDecoder(conf, enclass=enc, declass=dec, minbatch_class=batch)
 
   def __init__(self, conf, enclass=Encoder, declass=MarkDecoder, minbatch_class=MinBatch):

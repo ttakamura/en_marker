@@ -67,7 +67,7 @@ def test_data_at(test_corp):
     assert test_corp.ids_to_tokens(test_corp.data_at(0)) == ["<bos>", "<POS:DUMMY>", "is", "a", "<POS:DUMMY>", ".", "<br>", "<eos>"]
 
 def test_teacher_at(test_corp):
-    assert test_corp.ids_to_tokens(test_corp.teacher_at(0)) == ["<bos>", "<sj>", "<POS:DUMMY>", "</sj>", "<v>", "is", "</v>", "a", "<POS:DUMMY>", ".", "<br>", "<eos>"]
+    assert test_corp.ids_to_tokens(test_corp.teacher_at(0)) == ["<bos>", "<sj>", "james", "</sj>", "<v>", "is", "</v>", "a", "teacher", ".", "<br>", "<eos>"]
 
 def test_unknown_word(test_corp):
     assert test_corp.ids_to_tokens(test_corp.encode("isetan")) == ["<bos>", "<unk>", "<eos>"]
@@ -102,9 +102,9 @@ def test_minbatch_from_corpus(test_conf, test_corp):
     # <sj>James</sj> <v>is</v> a teacher.
     # I haven't
     assert f(tests[0].teach_batch_at(1)) == ["<sj>",     "i"]
-    assert f(tests[0].teach_batch_at(2)) == ["<POS:DUMMY>", "have"]
+    assert f(tests[0].teach_batch_at(2)) == ["james", "have"]
     assert f(tests[0].teach_batch_at(7)) == ["a",       "<pad>"]
-    assert f(tests[0].teach_batch_at(8)) == ["<POS:DUMMY>", "<pad>"]
+    assert f(tests[0].teach_batch_at(8)) == ["teacher", "<pad>"]
 
 def test_save_and_load(test_corp):
     test_corp.save("./tmp/test_corp.vocab")
