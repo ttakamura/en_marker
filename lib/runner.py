@@ -73,7 +73,8 @@ def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
     data_tokens = corpus.ids_to_tokens(batch.data_at(k))
     t, y = hyp_batch[k]
     if t[0] != None:
-      masked_t = t
+      masked_t = np.copy(t)
+      masked_t
       score = np.sum(y * masked_t) / np.sum(masked_t)
       scores.append(score)
     logging(header)
