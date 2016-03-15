@@ -36,12 +36,12 @@ def train(conf):
       loss.backward()
       opt.update()
       trained += batch.batch_size()
-      scores = report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TRAIN -------')
+      scores = report_batch(conf, corpus, epoch, trained, batch, hyp_batch, loss, '--- TRAIN -------')
       train_scores += scores
 
     for batch in tests:
       hyp_batch = forward(batch, conf, encdec, False, 15)
-      scores = report_batch(conf, corpus, epoch, trained, batch, hyp_batch, '--- TEST -------')
+      scores = report_batch(conf, corpus, epoch, trained, batch, hyp_batch, None, '--- TEST -------')
       test_scores += scores
 
     report_epoch(conf, epoch, train_scores, test_scores)
@@ -67,21 +67,19 @@ def report_epoch(conf, epoch, train_blue_scores, test_blue_scores):
   logging('================================================================')
   logging('')
 
-def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, header):
+def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, loss, header):
   scores = []
   for k in range(batch.batch_size()):
     data_tokens = corpus.ids_to_tokens(batch.data_at(k))
     t, y = hyp_batch[k]
-    if t[0] != None:
-      masked_t = np.copy(t)
-      masked_t
-      score = np.sum(y * masked_t) / np.sum(masked_t)
-      scores.append(score)
     logging(header)
     logging('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained))
     logging('  source  = ' + ' '.join(data_tokens))
-    # logging('  teacher = ' + ' '.join())
-    logging('  predict = ' + ' '.join(hyp_tokens))
+    logging('  predict = ' + ' '.join(mark.decoded_vec_to_str(y)))
+    if t[0] != None:
+      scores.append(mark.decoded_vec_score(t, y))
+      logging('  teacher = ' + ' '.join(mark.decoded_vec_to_str(t)))
+      logging('  loss %.3f' % (loss.data))
   return scores
 
 def report_bleu_graph(train_blue_scores, test_blue_scores):
