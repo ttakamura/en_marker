@@ -48,22 +48,38 @@ def convert_types_to_vec(type_tokens):
         vec[open_type_to_idx_map[type]] = 1.0
     if np.sum(vec) == 0.0:
         vec[open_type_to_idx_map['<->']] = 1.0
+    vec = vec.argmax(0)                # n-hot => 1-hot
     return vec
 
 def padding():
-    return np.zeros(mark_dim_size(), dtype=np.float32)
+    vec = np.zeros(mark_dim_size(), dtype=np.float32)
+    vec = open_type_to_idx_map['<->']  # n-hot => 1-hot
+    return vec
 
 def decoded_vec_score(t, y):
-    # <-> is not count to the score
-    masked_t = np.copy(t)
-    masked_t[open_type_to_idx_map['<->']] = 0.0
     y_max = y.argmax(1)
-    t_max = t.argmax(1)
-    return np.sum(y_max == t_max) / np.sum(t_max == t_max)
+    if t.ndim == 1:
+        t_max = t
+    else:
+        t_max = t.argmax(1)
+    score = 0.0
+    total = 0.0
+    for k in range(t_max.shape[0]):
+        if open_type_to_idx_map['<->'] != t_max[k]:
+            total += 1.0
+            if y_max[k] == t_max[k]:
+                score += 1.0
+    if total == 0.0:
+        return 0.0
+    else:
+        return score / total
 
 def decoded_vec_to_str(y):
     result = []
-    output = y.argmax(1)
+    if y.ndim == 1:
+        output = y
+    else:
+        output = y.argmax(1)
     for k in range(len(output)):
         result.append(idx_to_type(output[k]))
     return result

@@ -77,7 +77,7 @@ def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, loss, header):
     logging('epoch %3d/%3d, sample %8d' % (epoch + 1, conf.epoch(), trained))
     logging('  source  = ' + ' '.join(data_tokens))
     logging('  predict = ' + ' '.join(mark.decoded_vec_to_str(y)))
-    if t.dtype == np.float32:
+    if t[0] != None:
       scores.append(mark.decoded_vec_score(t, y))
       logging('  teacher = ' + ' '.join(mark.decoded_vec_to_str(t)))
     if type(loss) == Variable:

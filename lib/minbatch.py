@@ -44,7 +44,6 @@ class MinBatch:
             self.teach_rows = None
         else:
             self.teach_rows = self.convert_teach_id_rows(teach_id_rows)
-        self.teach_dtype = np.int32
 
     def __eq__(self, other):
         return (self.data_rows  == other.data_rows) and \
@@ -86,7 +85,10 @@ class MinBatch:
 
     def teach_batch_at(self, seq_idx):
         xp = self.conf.xp()
-        x  = xp.array([self.teach_rows[k][seq_idx] for k in range(self.batch_size())], dtype=self.teach_dtype)
+        if type(self.teach_rows[0][0]) == np.int64:
+            x = xp.array([self.teach_rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.int32)
+        else:
+            x = xp.array([self.teach_rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.float32)
         return x
 
     def batch_size(self):
@@ -106,7 +108,6 @@ class MarkTeacherMinBatch(MinBatch):
             self.teach_rows = None
         else:
             self.teach_rows = self.convert_teach_id_rows(teach_id_rows)
-        self.teach_dtype = np.float32
 
     def convert_teach_id_rows(self, id_rows):
         rows = [mark.convert_teach_id_row(row, self.corpus) for row in id_rows]
