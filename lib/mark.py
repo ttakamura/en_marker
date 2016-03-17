@@ -65,12 +65,14 @@ def decoded_vec_score(t, y):
     score = 0.0
     total = 0.0
     for k in range(t_max.shape[0]):
-        if open_type_to_idx_map['<->'] != t_max[k]:
-            total += 1.0
-            if y_max[k] == t_max[k]:
+        if y_max[k] == t_max[k]:
+            if open_type_to_idx_map['<->'] != t_max[k]:
+                total += 1.0
                 score += 1.0
+        else:
+            total += 1.0
     if total == 0.0:
-        return 0.0
+        return 1.0
     else:
         return score / total
 

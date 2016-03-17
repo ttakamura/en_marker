@@ -78,8 +78,10 @@ def report_batch(conf, corpus, epoch, trained, batch, hyp_batch, loss, header):
     logging('  source  = ' + ' '.join(data_tokens))
     logging('  predict = ' + ' '.join(mark.decoded_vec_to_str(y)))
     if t[0] != None:
-      scores.append(mark.decoded_vec_score(t, y))
+      score = mark.decoded_vec_score(t, y)
+      scores.append(score)
       logging('  teacher = ' + ' '.join(mark.decoded_vec_to_str(t)))
+      logging('    score = %.3f' % (score))
     if type(loss) == Variable:
       logging('  loss %.3f' % (loss.data))
   return scores
