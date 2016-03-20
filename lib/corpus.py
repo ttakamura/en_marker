@@ -3,8 +3,8 @@ import codecs
 import yaml
 import re
 import numpy as np
-from nltk.tag.perceptron import PerceptronTagger
 from nltk.translate.bleu_score import bleu
+from text_tagger import DummyPosTagger, NERTagger
 
 num_regexp      = re.compile(r'-?[0-9]+[,.0-9]+')
 meta_tag_regexp = re.compile(r'(<[^> ]+>)')
@@ -14,15 +14,13 @@ spaces_regexp   = re.compile(r'( +)')
 # Allow for train and test data
 train_allow_tags = ["<unk>", "<bos>", "<pad>", "<eos>", "<br>"]
 
-class DummyPosTagger:
-    def tag(self, tokens):
-        return [(token, "DUMMY") for token in tokens]
+def dummy_tagger():
+    return DummyPosTagger()
 
-# def open(path, tagger=PerceptronTagger()):
-def perceptron_tagger():
-    return PerceptronTagger()
+def tagger():
+    return NERTagger()
 
-def open(path, tagger=DummyPosTagger()):
+def open(path, tagger=dummy_tagger()):
     c = EnMarkCorpus(path, tagger=tagger)
     c.open()
     return c
@@ -212,7 +210,8 @@ class EnMarkCorpus(Corpus):
                 pos_safe_tokens.append(token)
         idx = 0
         pos_tags = ["<POS:META>"] * len(tokens)
-        for word, tag in self.tagger.tag(pos_safe_tokens):
+        tagged_tokens = self.tagger.tag(pos_safe_tokens)
+        for word, tag in tagged_tokens:
             while not word == tokens[idx]:
                 idx += 1
             pos_tags[idx] = "<POS:{0}>".format(tag)

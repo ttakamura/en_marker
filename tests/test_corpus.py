@@ -15,10 +15,10 @@ np.random.seed(123)
 test_file = "tests/test.html"
 
 def pytest_funcarg__test_corp(request):
-    return corpus.open(test_file, tagger=corpus.DummyPosTagger())
+    return corpus.open(test_file, tagger=corpus.dummy_tagger())
 
 def pytest_funcarg__pos_tag_corp(request):
-    return corpus.open(test_file, tagger=corpus.perceptron_tagger())
+    return corpus.open(test_file, tagger=corpus.tagger())
 
 def pytest_funcarg__test_conf(request):
     args = "--mode train".split(" ")
@@ -26,7 +26,7 @@ def pytest_funcarg__test_conf(request):
 
 # ------- test ------------------------
 def test_init_corpus():
-    c = corpus.EnMarkCorpus(test_file, tagger=corpus.DummyPosTagger())
+    c = corpus.EnMarkCorpus(test_file, tagger=corpus.dummy_tagger())
     assert c.vocab['<unk>'] == 0
 
 def test_size(test_corp):
