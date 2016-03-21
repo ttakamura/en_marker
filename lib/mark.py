@@ -8,13 +8,13 @@ mark_types = [
     '<ssj>' , # sub-subject
     '<v>'   , # verb
     '<not>' , # negative form
-    # '<av>'  , # auxiliary verb
-    # '<cp>'  , # continuous participle
-    # '<pp>'  , # past participle
-    # '<fp>'  , # future participle
-    # '<s>'   , # sentence
-    # '<ss>'  , # sub-sentence
-    # '<rel>'   # relational
+    '<av>'  , # auxiliary verb
+    '<cp>'  , # continuous participle
+    '<pp>'  , # past participle
+    '<fp>'  , # future participle
+    '<s>'   , # sentence
+    '<ss>'  , # sub-sentence
+    '<rel>'   # relational
 ]
 
 open_type_to_idx_map  = {type: idx for idx, type in enumerate(mark_types)}
