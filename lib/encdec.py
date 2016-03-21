@@ -94,7 +94,8 @@ class EncoderDecoder(Chain):
     if t.data.ndim == 1:
       self.loss += F.softmax_cross_entropy(y, t)
     else:
-      self.loss += -F.sum(F.log(F.softmax(y)) * t)
+      raise Exception("not supported")
+      # self.loss += -F.sum(F.log(F.softmax(y)) * t)
 
   def encode_seq(self, batch):
     for seq_idx in reversed(range(batch.data_seq_length())):
