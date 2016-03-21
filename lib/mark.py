@@ -52,14 +52,14 @@ def convert_types_to_vec(type_tokens):
     vec = np.zeros(mark_dim_size(), dtype=np.float32)
     for type in type_tokens:
         vec[open_type_to_idx_map[type]] = 1.0
-    if np.sum(vec) == 0.0:
-        vec[open_type_to_idx_map['<->']] = 1.0
-    vec = vec.argmax(0)                # n-hot => 1-hot
+    if len(type_tokens) == 0:
+        vec = -1
+    else:
+        vec = vec.argmax(0)    # n-hot => 1-hot
     return vec
 
 def padding():
-    vec = np.zeros(mark_dim_size(), dtype=np.float32)
-    vec = open_type_to_idx_map['<pad>']  # n-hot => 1-hot
+    vec = -1                   # n-hot => 1-hot
     return vec
 
 def decoded_vec_score(t, y):
@@ -90,6 +90,5 @@ def decoded_vec_to_str(y):
     else:
         output = y.argmax(1)
     for k in range(len(output)):
-        if output[k] != -1:
-            result.append(idx_to_type(output[k]))
+        result.append(idx_to_type(output[k]))
     return result

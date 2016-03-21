@@ -85,10 +85,10 @@ class MinBatch:
 
     def teach_batch_at(self, seq_idx):
         xp = self.conf.xp()
-        if type(self.teach_rows[0][0]) == np.int64:
-            x = xp.array([self.teach_rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.int32)
-        else:
+        if type(self.teach_rows[0][0]) == float:
             x = xp.array([self.teach_rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.float32)
+        else:
+            x = xp.array([self.teach_rows[k][seq_idx] for k in range(self.batch_size())], dtype=np.int32)
         return x
 
     def batch_size(self):
