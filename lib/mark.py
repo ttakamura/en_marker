@@ -27,7 +27,10 @@ def mark_dim_size():
     return len(mark_types)
 
 def idx_to_type(idx):
-    return mark_types[idx]
+    if idx == -1:
+        return '<pad>'
+    else:
+        return mark_types[idx]
 
 def convert_teach_id_row(row, corpus):
     context   = {type: False for type in mark_types}
@@ -68,12 +71,13 @@ def decoded_vec_score(t, y):
     score = 0.0
     total = 0.0
     for k in range(t_max.shape[0]):
-        if y_max[k] == t_max[k]:
-            if open_type_to_idx_map['<->'] != t_max[k]:
+        if t_max[k] != -1:
+            if y_max[k] == t_max[k]:
+                if open_type_to_idx_map['<->'] != t_max[k]:
+                    total += 1.0
+                    score += 1.0
+            else:
                 total += 1.0
-                score += 1.0
-        else:
-            total += 1.0
     if total == 0.0:
         return 1.0
     else:
@@ -86,5 +90,6 @@ def decoded_vec_to_str(y):
     else:
         output = y.argmax(1)
     for k in range(len(output)):
-        result.append(idx_to_type(output[k]))
+        if output[k] != -1:
+            result.append(idx_to_type(output[k]))
     return result
