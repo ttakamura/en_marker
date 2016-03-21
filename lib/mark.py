@@ -98,7 +98,7 @@ def decoded_vec_to_str(y):
     return result
 
 def argmax_vec(y):
-    #probs  = y.max(1)
+    probs  = y.max(1)
     output = y.argmax(1)
-    #output[probs < 0.5] = -1
+    output[probs < 0.3] = -1
     return output
