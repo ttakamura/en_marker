@@ -18,7 +18,10 @@ mark_types = [
 ]
 
 open_type_to_idx_map  = {type: idx for idx, type in enumerate(mark_types)}
+open_type_to_idx_map['<pad>'] = -1
+
 close_type_to_idx_map = {re.sub(r'<(.+)>', r'</\1>', type): idx for idx, type in enumerate(mark_types)}
+close_type_to_idx_map['</pad>'] = -1
 
 def mark_dim_size():
     return len(mark_types)
@@ -53,7 +56,7 @@ def convert_types_to_vec(type_tokens):
 
 def padding():
     vec = np.zeros(mark_dim_size(), dtype=np.float32)
-    vec = open_type_to_idx_map['<->']  # n-hot => 1-hot
+    vec = open_type_to_idx_map['<pad>']  # n-hot => 1-hot
     return vec
 
 def decoded_vec_score(t, y):
