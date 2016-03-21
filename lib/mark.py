@@ -28,7 +28,9 @@ def mark_dim_size():
 
 def idx_to_type(idx):
     if idx == -1:
-        return '<pad>'
+        return '....'
+    elif mark_types[idx] == '<->':
+        return '____'
     else:
         return mark_types[idx]
 
@@ -53,17 +55,17 @@ def convert_types_to_vec(type_tokens):
     for type in type_tokens:
         vec[open_type_to_idx_map[type]] = 1.0
     if len(type_tokens) == 0:
-        vec = -1
+        vec = open_type_to_idx_map['<->']   # n-hot => 1-hot
     else:
-        vec = vec.argmax(0)    # n-hot => 1-hot
+        vec = vec.argmax(0)                 # n-hot => 1-hot
     return vec
 
 def padding():
-    vec = -1                   # n-hot => 1-hot
+    vec = open_type_to_idx_map['<pad>']     # n-hot => 1-hot
     return vec
 
 def decoded_vec_score(t, y):
-    y_max = y.argmax(1)
+    y_max = argmax_vec(y)
     if t.ndim == 1:
         t_max = t
     else:
@@ -87,8 +89,16 @@ def decoded_vec_to_str(y):
     result = []
     if y.ndim == 1:
         output = y
+        for k in range(len(output)):
+            result.append(idx_to_type(output[k]))
     else:
-        output = y.argmax(1)
-    for k in range(len(output)):
-        result.append(idx_to_type(output[k]))
+        output = argmax_vec(y)
+        for k in range(len(output)):
+            result.append(idx_to_type(output[k]))
     return result
+
+def argmax_vec(y):
+    #probs  = y.max(1)
+    output = y.argmax(1)
+    #output[probs < 0.5] = -1
+    return output
