@@ -12,9 +12,9 @@ mark_types = [
     '<cp>'  , # continuous participle
     '<pp>'  , # past participle
     '<fp>'  , # future participle
-    '<s>'   , # sentence
-    '<ss>'  , # sub-sentence
-    '<rel>'   # relational
+    # '<s>'   , # sentence
+    # '<ss>'  , # sub-sentence
+    # '<rel>'   # relational
 ]
 
 open_type_to_idx_map  = {type: idx for idx, type in enumerate(mark_types)}
@@ -98,7 +98,7 @@ def decoded_vec_to_str(y):
     return result
 
 def argmax_vec(y):
-    probs  = y.max(1)
+    # probs  = y.max(1)
     output = y.argmax(1)
-    output[probs < 0.3] = -1
+    # output[probs < 0.3] = -1
     return output
