@@ -165,6 +165,7 @@ class Config:
         return EncoderDecoder.build(self)
 
     def optimizer(self):
+        # return optimizers.SGD(lr = self.lr())
         return optimizers.AdaGrad(lr = self.lr())
 
     def setup_model(self):
