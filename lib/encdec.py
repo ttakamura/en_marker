@@ -92,10 +92,20 @@ class EncoderDecoder(Chain):
     if type(t) != Variable:
       t = Variable(t)
     if t.data.ndim == 1:
+      t = self.mask_no_mark_label(t)
       self.loss += F.softmax_cross_entropy(y, t)
     else:
       raise Exception("not supported")
       # self.loss += -F.sum(F.log(F.softmax(y)) * t)
+
+  # mask <-> label as ignore-label
+  def mask_no_mark_label(self, t):
+    # print '--------'
+    # print t.data
+    mask = np.logical_and((t.data == 0), (np.random.rand(t.data.shape[0]) > 0.3))
+    t.data[mask] = -1
+    # print t.data
+    return t
 
   def encode_seq(self, batch):
     for seq_idx in reversed(range(batch.data_seq_length())):
