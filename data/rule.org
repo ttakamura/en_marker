@@ -4,9 +4,16 @@
   v   = 動詞
   not = 否定語
   av  = 助動詞（Do, will, must...）
-  cp  = 現在分詞（xxing）
+  cp  = 現在分詞（xxing, 原型）
   pp  = 過去分詞（I was killed）
   fp  = 未来分詞 (to help)
+
+  等位接続詞
+  s   = センテンス
+  con = 接続詞（and, not, but...）
+
+  I went first and you went second.
+  <s><sj>I</sj> <v>went</v> first</s> <con>and</con> <s><sj>you</sj> <v>went</v> second</s>.
 
   関係詞 単純型
    s   = 主節
