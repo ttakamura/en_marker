@@ -14,7 +14,8 @@ mark_types = [
     '<fp>'  , # future participle
     # '<s>'   , # sentence
     # '<ss>'  , # sub-sentence
-    # '<rel>'   # relational
+    # '<rel>' ,  # relational
+    '<con>'   # conjuections
 ]
 
 open_type_to_idx_map  = {type: idx for idx, type in enumerate(mark_types)}
