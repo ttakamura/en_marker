@@ -34,7 +34,6 @@ def dummy_data_train(conf, encdec, opt, batch):
         opt.update()
         loss = float(loss.data)
         print loss
-        assert loss < prev_loss
         prev_loss = loss
     return prev_loss
 
@@ -58,4 +57,4 @@ def test_v2_train(test_corp):
     batch_size = 2
     train_idxs, test_idxs, trains, tests = MarkTeacherMinBatch.randomized_from_corpus(conf, conf.corpus, batch_size)
     loss = dummy_data_train(conf, encdec, opt, trains[0])
-    assert loss < 30.0
+    assert loss < 5.0
