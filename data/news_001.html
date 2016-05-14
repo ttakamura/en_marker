@@ -1,13 +1,3 @@
 <sj>Math.random()</sj> <v>is</v> the most well-known and frequently-used source of randomness in Javascript.
 
 In V8 and most other Javascript engines, <sj>it</sj> <v>is</v> <pp>implemented</pp> using a pseudo-random number generator (PRNG).
-
-As with all PRNGs, <sj>the random number</sj> <v>is</v> <pp>derived</pp> from an internal state, which is altered by a fixed algorithm for every new random number.
-
-
-
-So for a given initial state, the sequence of random numbers is deterministic. Since the bit size n of the internal state is limited, the numbers that a PRNG generates will eventually repeat themselves. The upper bound for the period length of this permutation cycle is of course 2n.
-
-There are many different PRNG algorithms; among the most well-known ones are Mersenne-Twister and LCG. Each has its particular characteristics, advantages, and drawbacks. Ideally, it would use as little memory as possible for the initial state, be quick to perform, have a large period length, and offer a high quality random distribution. While memory usage, performance, and period length can easily be measured or calculated, the quality is harder to determine. There is a lot of math behind statistical tests to check the quality of random numbers. The de-facto standard PRNG test suite, TestU01, implements many of these tests.
-
-Until recently (up to version 4.9.40), V8’s choice of PRNG was MWC1616 (multiply with carry, combining two 16-bit parts). It uses 64 bits of internal state and looks roughly like this:
