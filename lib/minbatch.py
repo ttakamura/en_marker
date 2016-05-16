@@ -34,7 +34,8 @@ class MinBatch:
         if not isinstance(source, list):
             source = [source]
         source = [corpus.encode(s) for s in source]
-        return cls(conf, corpus, source)
+        # return cls(conf, corpus, source)
+        return cls(conf, corpus, source, source)
 
     def __init__(self, conf, corpus, data_id_rows, teach_id_rows=None):
         self.conf      = conf
