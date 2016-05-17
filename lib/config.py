@@ -55,7 +55,7 @@ class Config:
         p.add_argument('--minbatch',   default=default_minbatch, type=int)
         p.add_argument('--lr',         default=default_lr,       type=float)
         p.add_argument('--gradclip',   default=default_clip,     type=int)
-        p.add_argument('--train_file', default='data/original.html')
+        p.add_argument('--train_file', default='data/converted/original.html')
         p.add_argument('--load_prefix', default='model/sample',  help='load from the model')
         p.add_argument('--minor_word', default=1,                type=int, help='minimum frequency of minor-word')
         return p.parse_args(raw_args)

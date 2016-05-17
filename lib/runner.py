@@ -58,7 +58,7 @@ def predict(conf, encdec, source):
   print ' '.join(conf.corpus.ids_to_tokens(batch.data_at(0)))
   hyp   = forward(batch, conf, encdec, False, 30)
   #print ' '.join(hyp[0])
-  return hyp
+  return batch, hyp
 
 def report_epoch(conf, epoch, train_blue_scores, test_blue_scores):
   train_mean = np.array(train_blue_scores).mean()

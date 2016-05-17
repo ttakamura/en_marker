@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import re
 import numpy as np
@@ -96,6 +97,15 @@ def decoded_vec_to_str(y):
         output = argmax_vec(y)
         for k in range(len(output)):
             result.append(idx_to_type(output[k]))
+    return result
+
+def decoded_vec_to_hash(y):
+    result = []
+    output = argmax_vec(y)
+    for k in range(len(output)):
+        # TODO: 出力を足切りして多次元にする
+        mark = { mark_types[output[k]]: True }
+        result.append(mark)
     return result
 
 def argmax_vec(y):
