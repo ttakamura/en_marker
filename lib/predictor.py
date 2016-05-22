@@ -1,11 +1,15 @@
 import runner
 import mark
+from nltk.tokenize import sent_tokenize
 
 model_prefix = 'model/current'
 encdec, opt, conf = runner.load(model_prefix)
 
+def split(source_text):
+    return sent_tokenize(source_text)
+
 def predict(source_text):
-    sources   = [source_text]
+    sources   = split(source_text)
     sentences = []
     for source in sources:
         batch, hyp  = runner.predict(conf, encdec, source)
