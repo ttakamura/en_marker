@@ -4,9 +4,9 @@ import sys
 sys.path.append('lib')
 import predictor
 
-@route('/predict')
+@route('/predict', method='POST')
 def predict():
-    source    = request.query.source
+    source    = request.params.source
     sentences = predictor.predict(source)
     response.set_header('Access-Control-Allow-Origin', '*')
     return {"sentences": sentences}
