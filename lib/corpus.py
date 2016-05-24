@@ -12,7 +12,7 @@ dot_guys_regexp = re.compile(r'([,.\'"?.])')
 spaces_regexp   = re.compile(r'( +)')
 
 # Allow for train and test data
-train_allow_tags = ["<unk>", "<bos>", "<pad>", "<eos>", "<br>"]
+train_allow_tags = ["<unk>", "<bos>", "<pad>", "<eos>", "<br>", "<number>"]
 
 def dummy_tagger():
     return DummyPosTagger()
